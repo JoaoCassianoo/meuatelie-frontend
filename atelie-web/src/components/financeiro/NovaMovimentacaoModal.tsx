@@ -1,18 +1,21 @@
-import { useState } from 'react';
-import { criarMovimentacao } from '../../api/financeiro.api';
-import { Modal } from '../modal';
+import { useState, useEffect } from 'react';
+import { criarMovimentacao, atualizarMovimentacao } from '../../api/financeiro.api';
+import { Modal } from '../Modal';
 import { ContextoFinanceiro, MeioPagamento } from '../../types/financeiro';
+import type { MovimentacaoFinanceira } from '../../types/financeiro';
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   onSaved: () => void;
+  movimentacao?: MovimentacaoFinanceira | null;
 };
 
 export function NovaMovimentacaoModal({
   isOpen,
   onClose,
   onSaved,
+  movimentacao,
 }: Props) {
   const [descricao, setDescricao] = useState('');
   const [valor, setValor] = useState(0);
@@ -25,15 +28,43 @@ export function NovaMovimentacaoModal({
     MeioPagamento.CartaoDebito
   );
 
+  useEffect(() => {
+    if (movimentacao) {
+      setDescricao(movimentacao.descricao);
+      setValor(movimentacao.valor);
+      // ensure date input gets YYYY-MM-DD
+      setData(movimentacao.data.split('T')[0]);
+      setContexto(movimentacao.contexto);
+      setMeioPagamento(movimentacao.meioPagamento);
+    } else if (isOpen) {
+      // reset when opening for a new movimentação
+      setDescricao('');
+      setValor(0);
+      setData('');
+      setContexto(ContextoFinanceiro.Pessoal);
+      setMeioPagamento(MeioPagamento.CartaoDebito);
+    }
+  }, [movimentacao, isOpen]);
 
   async function salvar() {
-    await criarMovimentacao({
-      descricao,
-      valor,
-      data,
-      contexto,
-      meioPagamento
-    });
+    if (movimentacao && movimentacao.id) {
+      await atualizarMovimentacao(movimentacao.id, {
+        id: movimentacao.id,
+        descricao,
+        valor,
+        data,
+        contexto,
+        meioPagamento,
+      });
+    } else {
+      await criarMovimentacao({
+        descricao,
+        valor,
+        data,
+        contexto,
+        meioPagamento,
+      });
+    }
 
     onSaved();
     onClose();
@@ -42,7 +73,7 @@ export function NovaMovimentacaoModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <h2 className="text-lg font-semibold mb-4">
-        Nova Movimentação
+        {movimentacao ? 'Editar Movimentação' : 'Nova Movimentação'}
       </h2>
 
       <input
@@ -85,6 +116,7 @@ export function NovaMovimentacaoModal({
         >
         <option value={MeioPagamento.CartaoDebito}>Cartão Débito</option>
         <option value={MeioPagamento.CartaoCredito}>Cartão Crédito</option>
+        <option value={MeioPagamento.Pix}>Pix</option>
       </select>
 
 

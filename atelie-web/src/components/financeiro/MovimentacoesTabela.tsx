@@ -42,7 +42,7 @@ export function MovimentacoesTabela({
             </td>
 
             <td className="p-2 text-center">{m.contexto == 1 ? 'Loja' : 'Pessoal'}</td>
-            <td className="p-2 text-center">{m.meioPagamento == 1 ? 'Crédito' : 'Débito'}</td>
+            <td className="p-2 text-center">{m.meioPagamento == 1 ? 'Crédito' : m.meioPagamento == 2 ? 'Débito' : 'Pix'}</td>
 
             <td className="p-2 flex gap-2 justify-end">
               <button

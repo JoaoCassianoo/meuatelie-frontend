@@ -58,7 +58,7 @@ export default function Financeiro() {
             onMesChange={setMes}
         />
         <button
-            onClick={() => setModalOpen(true)}
+            onClick={() => { setMovimentacaoEditando(null); setModalOpen(true); }}
             className="bg-green-600 text-white px-4 py-2 mb-4 rounded"
             >
             + Nova Movimentação
@@ -89,7 +89,8 @@ export default function Financeiro() {
 
       <NovaMovimentacaoModal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        movimentacao={movimentacaoEditando}
+        onClose={() => { setModalOpen(false); setMovimentacaoEditando(null); }}
         onSaved={() => {listarMovimentacoes(ano, mes).then(setMovs), obterResumoMensal(ano, mes).then(setResumo)}}
         />
 

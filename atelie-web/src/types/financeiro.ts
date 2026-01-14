@@ -18,7 +18,8 @@ export type ContextoFinanceiro =
 
 export const MeioPagamento = {
   CartaoDebito: 1,
-  CartaoCredito: 2
+  CartaoCredito: 2,
+  Pix: 3,
 } as const;
 
 export type MeioPagamento =
