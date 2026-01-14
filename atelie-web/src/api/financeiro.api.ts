@@ -6,7 +6,6 @@ export async function obterResumoAnual(ano: number): Promise<ResumoAnual> {
   return response.data;
 }
 
-
 export async function obterResumoMensal(
   ano: number,
   mes: number
@@ -26,3 +25,21 @@ export async function listarMovimentacoes(
   );
   return response.data;
 }
+
+export function criarMovimentacao(
+  data: Omit<MovimentacaoFinanceira, 'id'>
+) {
+  return api.post('/Financeiro', data);
+}
+
+export function excluirMovimentacao(id: number) {
+  return api.delete(`/Financeiro/${id}`);
+}
+
+export function atualizarMovimentacao(
+  id: number,
+  data: MovimentacaoFinanceira
+) {
+  return api.put(`/Financeiro/${id}`, data);
+}
+
