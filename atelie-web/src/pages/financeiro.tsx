@@ -15,8 +15,8 @@ import { excluirMovimentacao as excluirApi } from '../api/financeiro.api';
 export default function Financeiro() {
   const [ano, setAno] = useState(2025);
   const [mes, setMes] = useState(new Date().getMonth() + 1);
+  const [tipo, setTipo] = useState(3);
   const [resumo, setResumo] = useState<any>(null);
-  const [resumoAnual, setResumoAnual] = useState<any>(null);
   const [movs, setMovs] = useState<MovimentacaoFinanceira[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [movimentacaoEditando, setMovimentacaoEditando] =  useState<MovimentacaoFinanceira | null>(null);
@@ -33,16 +33,15 @@ export default function Financeiro() {
 
     await excluirApi(id);
 
-    listarMovimentacoes(ano, mes).then(setMovs);
+    listarMovimentacoes(ano, mes, tipo).then(setMovs);
     obterResumoMensal(ano, mes).then(setResumo);
     }
 
 
   useEffect(() => {
-    listarMovimentacoes(ano, mes).then(setMovs);
+    listarMovimentacoes(ano, mes, tipo).then(setMovs);
     obterResumoMensal(ano, mes).then(setResumo);
-    obterResumoAnual(ano).then(setResumoAnual);
-  }, [ano, mes]);
+  }, [ano, mes, tipo, movimentacaoEditando, modalOpen]);
 
   if (!resumo) return <p>Carregando...</p>;
 
@@ -54,8 +53,10 @@ export default function Financeiro() {
         <PeriodoSelector
             ano={ano}
             mes={mes}
+            tipo={tipo}
             onAnoChange={setAno}
             onMesChange={setMes}
+            onTipoChange={setTipo}
         />
         <button
             onClick={() => { setMovimentacaoEditando(null); setModalOpen(true); }}
@@ -67,18 +68,14 @@ export default function Financeiro() {
 
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <ResumoCard titulo="Entradas Anuais" valor={resumoAnual.totalEntradas} />
-        <ResumoCard titulo="Saídas Anuais" valor={resumoAnual.totalSaidas} />
-        <ResumoCard titulo="Loja Anual" valor={resumoAnual.totalLoja} />
-        <ResumoCard titulo="Pessoal Anual" valor={resumoAnual.totalPessoal} />
         <ResumoCard titulo="Entradas" valor={resumo.totalEntradas} />
-        <ResumoCard titulo="Saídas" valor={resumo.totalSaidas} />
-        <ResumoCard titulo="Loja" valor={resumo.totalLoja} />
-        <ResumoCard titulo="Pessoal" valor={resumo.totalPessoal} />
-        <ResumoCard titulo="Débito" valor={resumo.totalDebito} />
-        <ResumoCard titulo="Crédito" valor={resumo.totalCredito} />
-        <ResumoCard titulo="Débito Anual" valor={resumoAnual.totalDebito} />
-        <ResumoCard titulo="Crédito Anual" valor={resumoAnual.totalCredito} />
+        <ResumoCard titulo="Saídas" valor={resumo.totalSaidas - resumo.totalCredito} />
+        <ResumoCard titulo="Saídas Credito" valor={resumo.totalCredito} />
+        <ResumoCard titulo="Saídas Débito" valor={resumo.totalDebito} />
+        <ResumoCard titulo="Entradas Loja" valor={resumo.totalEntradasLoja} />
+        <ResumoCard titulo="Saídas Loja" valor={resumo.totalSaidasLoja} />
+        <ResumoCard titulo="Total Loja" valor={resumo.totalLoja} />
+        <ResumoCard titulo="Total Pessoal" valor={resumo.totalPessoal} />
       </div>
 
       <MovimentacoesTabela
@@ -91,7 +88,7 @@ export default function Financeiro() {
         isOpen={modalOpen}
         movimentacao={movimentacaoEditando}
         onClose={() => { setModalOpen(false); setMovimentacaoEditando(null); }}
-        onSaved={() => {listarMovimentacoes(ano, mes).then(setMovs), obterResumoMensal(ano, mes).then(setResumo)}}
+        onSaved={() => {listarMovimentacoes(ano, mes, tipo).then(setMovs)}}
         />
 
     </div>

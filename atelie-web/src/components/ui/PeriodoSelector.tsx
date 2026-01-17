@@ -1,11 +1,13 @@
 interface Props {
   ano: number;
   mes: number;
+  tipo: number;
   onAnoChange: (ano: number) => void;
   onMesChange: (mes: number) => void;
+  onTipoChange: (tipo: number) => void;
 }
 
-export function PeriodoSelector({ ano, mes, onAnoChange, onMesChange }: Props) {
+export function PeriodoSelector({ ano, mes, tipo, onAnoChange, onMesChange, onTipoChange}: Props) {
   return (
     <div className="flex gap-4 mb-6">
       <div>
@@ -30,6 +32,19 @@ export function PeriodoSelector({ ano, mes, onAnoChange, onMesChange }: Props) {
               {i + 1}
             </option>
           ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm">Tipo de Movimentação</label>
+        <select
+          value={tipo}
+          onChange={e => onTipoChange(Number(e.target.value))}
+          className="border rounded px-2 py-1"
+        >
+            <option key={0} value={1}>Entradas</option>
+            <option key={1} value={2}>Saidas</option>
+            <option key={2} value={3}>Todas</option>
         </select>
       </div>
     </div>

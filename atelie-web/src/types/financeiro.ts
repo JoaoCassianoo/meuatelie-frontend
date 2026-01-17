@@ -1,15 +1,19 @@
 export interface ResumoAnual {
   totalEntradas: number;
   totalSaidas: number;
+  totalEntradasLoja: number;
+  totalSaidasLoja: number;
   totalLoja: number;
+  totalEntradasPessoal: number;
+  totalSaidasPessoal: number;   
   totalPessoal: number;
   totalDebito: number;
   totalCredito: number;
 }
 
 export const ContextoFinanceiro = {
-  Pessoal: 1,
-  Loja: 2,
+  Loja: 1,
+  Pessoal: 2,
 } as const;
 
 export type ContextoFinanceiro =
@@ -17,8 +21,8 @@ export type ContextoFinanceiro =
 
 
 export const MeioPagamento = {
-  CartaoDebito: 1,
-  CartaoCredito: 2,
+  CartaoCredito: 1,
+  CartaoDebito: 2,
   Pix: 3,
 } as const;
 

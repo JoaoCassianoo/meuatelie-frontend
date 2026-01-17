@@ -18,12 +18,14 @@ export async function obterResumoMensal(
 
 export async function listarMovimentacoes(
   ano: number,
-  mes: number
+  mes: number,
+  tipo: number,
 ): Promise<MovimentacaoFinanceira[]> {
   const response = await api.get(
-    `/Financeiro/movimentacoes?ano=${ano}&mes=${mes}`
+    `/Financeiro/movimentacoes?ano=${ano}&mes=${mes}&tipo=${tipo}`
   );
   return response.data;
+  console.log(response.data);
 }
 
 export function criarMovimentacao(
