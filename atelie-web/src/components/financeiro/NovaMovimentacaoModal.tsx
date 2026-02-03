@@ -3,9 +3,12 @@ import { criarMovimentacao, atualizarMovimentacao } from '../../api/financeiro.a
 import { Modal } from '../Modal';
 import { ContextoFinanceiro, MeioPagamento } from '../../types/financeiro';
 import type { MovimentacaoFinanceira } from '../../types/financeiro';
+import { X, Save } from 'lucide-react';
 
 type Props = {
   isOpen: boolean;
+  ano: number;
+  mes: number;
   onClose: () => void;
   onSaved: () => void;
   movimentacao?: MovimentacaoFinanceira | null;
@@ -13,6 +16,8 @@ type Props = {
 
 export function NovaMovimentacaoModal({
   isOpen,
+  ano,
+  mes,
   onClose,
   onSaved,
   movimentacao,
@@ -21,11 +26,11 @@ export function NovaMovimentacaoModal({
   const [valor, setValor] = useState(0);
   const [data, setData] = useState('');
   const [contexto, setContexto] = useState<ContextoFinanceiro>(
-    ContextoFinanceiro.Pessoal
+    ContextoFinanceiro.Loja
   );
 
   const [meioPagamento, setMeioPagamento] = useState<MeioPagamento>(
-    MeioPagamento.CartaoDebito
+    MeioPagamento.CartaoCredito
   );
 
   useEffect(() => {
@@ -40,11 +45,14 @@ export function NovaMovimentacaoModal({
       // reset when opening for a new movimentação
       setDescricao('');
       setValor(0);
-      setData('');
+      // Set date to first day of current month/year (YYYY-MM-01)
+      const dataAtual = new Date(ano, mes - 1, 1);
+      const dataFormatada = dataAtual.toISOString().split('T')[0];
+      setData(dataFormatada);
       setContexto(ContextoFinanceiro.Pessoal);
       setMeioPagamento(MeioPagamento.CartaoDebito);
     }
-  }, [movimentacao, isOpen]);
+  }, [movimentacao, isOpen, ano, mes]);
 
   async function salvar() {
     if (movimentacao && movimentacao.id) {
@@ -72,61 +80,107 @@ export function NovaMovimentacaoModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <h2 className="text-lg font-semibold mb-4">
-        {movimentacao ? 'Editar Movimentação' : 'Nova Movimentação'}
-      </h2>
-
-      <input
-        className="border w-full mb-2 p-2"
-        placeholder="Descrição"
-        value={descricao}
-        onChange={e => setDescricao(e.target.value)}
-      />
-
-      <input
-        type="number"
-        className="border w-full mb-2 p-2"
-        value={valor}
-        onChange={e => setValor(Number(e.target.value))}
-      />
-
-      <input
-        type="date"
-        className="border w-full mb-2 p-2"
-        value={data}
-        onChange={e => setData(e.target.value)}
-      />
-
-      <select
-        value={contexto}
-        onChange={(e) =>
-            setContexto(Number(e.target.value) as ContextoFinanceiro)
-        }
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">
+          {movimentacao ? 'Editar Movimentação' : 'Nova Movimentação'}
+        </h2>
+        <button
+          onClick={onClose}
+          className="p-1 hover:bg-gray-200 rounded-lg transition-colors"
         >
-        <option value={ContextoFinanceiro.Pessoal}>Pessoal</option>
-        <option value={ContextoFinanceiro.Loja}>Loja</option>
-      </select>
+          <X size={24} className="text-gray-600" />
+        </button>
+      </div>
 
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Descrição
+          </label>
+          <input
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            placeholder="Ex: Compra de materiais"
+            value={descricao}
+            onChange={e => setDescricao(e.target.value)}
+          />
+        </div>
 
-      <select
-        value={meioPagamento}
-        onChange={(e) =>
-            setMeioPagamento(Number(e.target.value) as MeioPagamento)
-        }
-        >
-        <option value={MeioPagamento.CartaoDebito}>Cartão Débito</option>
-        <option value={MeioPagamento.CartaoCredito}>Cartão Crédito</option>
-        <option value={MeioPagamento.Pix}>Pix</option>
-      </select>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Valor (R$)
+          </label>
+          <input
+            type="number"
+            step="0.01"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            value={valor}
+            onChange={e => setValor(Number(e.target.value))}
+          />
+        </div>
 
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Data
+          </label>
+          <input
+            type="date"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            value={data}
+            onChange={e => setData(e.target.value)}
+          />
+        </div>
 
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Contexto
+            </label>
+            <select
+              value={contexto}
+              onChange={(e) =>
+                setContexto(Number(e.target.value) as ContextoFinanceiro)
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            >
+              <option value={ContextoFinanceiro.Loja}>Loja</option>
+              <option value={ContextoFinanceiro.Pessoal}>Pessoal</option>
+            </select>
+          </div>
 
-      <button
-        onClick={salvar}
-        className="bg-blue-600 text-white px-4 py-2 rounded"
-      >
-        Salvar
-      </button>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Meio de Pagamento
+            </label>
+            <select
+              value={meioPagamento}
+              onChange={(e) =>
+                setMeioPagamento(Number(e.target.value) as MeioPagamento)
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            >
+              <option value={MeioPagamento.CartaoCredito}>Cartão Crédito</option>
+              <option value={MeioPagamento.CartaoDebito}>Cartão Débito</option>
+              <option value={MeioPagamento.Pix}>Pix</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex gap-3 pt-4">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={salvar}
+            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors"
+          >
+            <Save size={18} />
+            Salvar
+          </button>
+        </div>
+      </div>
     </Modal>
   );
 }

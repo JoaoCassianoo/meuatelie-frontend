@@ -1,5 +1,6 @@
 import { api } from './http';
 import type { ResumoAnual, MovimentacaoFinanceira } from '../types/financeiro';
+export { ContextoFinanceiro, MeioPagamento } from '../types/financeiro';
 
 export async function obterResumoAnual(ano: number): Promise<ResumoAnual> {
   const response = await api.get(`/Financeiro/resumo/anual?ano=${ano}`);
@@ -20,9 +21,11 @@ export async function listarMovimentacoes(
   ano: number,
   mes: number,
   tipo: number,
+  meio: number,
+  contexto: number
 ): Promise<MovimentacaoFinanceira[]> {
   const response = await api.get(
-    `/Financeiro/movimentacoes?ano=${ano}&mes=${mes}&tipo=${tipo}`
+    `/Financeiro/movimentacoes?ano=${ano}&mes=${mes}&tipo=${tipo}&meio=${meio}&contexto=${contexto}`
   );
   return response.data;
   console.log(response.data);
@@ -43,5 +46,19 @@ export function atualizarMovimentacao(
   data: MovimentacaoFinanceira
 ) {
   return api.put(`/Financeiro/${id}`, data);
+}
+
+export async function importarMovimentacoesCSV(
+  arquivo: File,
+  ano: number,
+  mes: number
+) {
+  const formData = new FormData();
+  formData.append('file', arquivo);
+  return api.post(`/Financeiro/importar?ano=${ano}&mes=${mes}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
 }
 
