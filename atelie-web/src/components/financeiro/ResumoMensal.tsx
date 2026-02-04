@@ -1,6 +1,6 @@
 interface Props {
   titulo: string;
-  valor: number;
+  valor: string;
 }
 
 export function ResumoCard({ titulo, valor }: Props) {
@@ -8,7 +8,7 @@ export function ResumoCard({ titulo, valor }: Props) {
     <div className="bg-white p-4 rounded shadow">
       <p className="text-gray-500">{titulo}</p>
       <p className="text-xl font-bold">
-        R$ {valor.toFixed(2)}
+        R$ {valor}
       </p>
     </div>
   );

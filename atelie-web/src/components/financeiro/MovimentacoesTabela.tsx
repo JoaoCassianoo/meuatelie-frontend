@@ -5,13 +5,20 @@ interface Props {
   dados: MovimentacaoFinanceira[];
   onEditar: (mov: MovimentacaoFinanceira) => void;
   onExcluir: (id: number) => void;
+  esconderReceita?: (valor: string) => string;
 }
+
+
 
 export function MovimentacoesTabela({
   dados,
   onEditar,
-  onExcluir
+  onExcluir,
+  esconderReceita
 }: Props) {
+   function escondeReceita(valor: string) {
+    return esconderReceita ? esconderReceita(valor) : valor;
+  }
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -53,7 +60,7 @@ export function MovimentacoesTabela({
                       m.valor < 0 ? 'text-red-600' : 'text-green-600'
                     }`}
                   >
-                    {m.valor < 0 ? '- ' : '+ '}R$ {Math.abs(m.valor).toFixed(2).replace('.', ',')}
+                    {m.valor < 0 ? '- ' : '+ '}R$ {escondeReceita(Math.abs(m.valor).toFixed(2).replace('.', ','))}
                   </span>
                 </td>
 

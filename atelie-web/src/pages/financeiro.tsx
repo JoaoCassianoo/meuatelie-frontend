@@ -8,7 +8,7 @@ import type { MovimentacaoFinanceira } from '../types/financeiro';
 import { NovaMovimentacaoModal } from '../components/financeiro/NovaMovimentacaoModal';
 import { excluirMovimentacao as excluirApi, importarMovimentacoesCSV } from '../api/financeiro.api';
 import { PageHeader } from '../components/PageHeader';
-import { TrendingUp, TrendingDown, BarChart3, Plus, Upload } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart3, Plus, Upload, EyeOff, Eye } from 'lucide-react';
 
 
 
@@ -25,6 +25,7 @@ export default function Financeiro() {
   const [movs, setMovs] = useState<MovimentacaoFinanceira[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [movimentacaoEditando, setMovimentacaoEditando] =  useState<MovimentacaoFinanceira | null>(null);
+  const [mostrarValores, setMostrarValores] = useState(false);
 
   // Calculate balance
   const saldoAnual = (resumoAnual?.totalEntradas || 0) + ((resumoAnual?.totalSaidas || 0) - (resumoAnual?.totalCredito || 0));
@@ -46,6 +47,10 @@ export default function Financeiro() {
 
     // Reset input
     event.target.value = '';
+  }
+
+  function esconderReceita(valor: string) {
+    return mostrarValores ? valor : "***,**";
   }
 
   function abrirEdicao(mov: MovimentacaoFinanceira) {
@@ -75,8 +80,25 @@ export default function Financeiro() {
 
   return (
     <div className="p-6 lg:p-8">
-      <PageHeader title="Financeiro" />
-
+      <div className="flex items-center text-center justify-between">
+        <PageHeader title="Financeiro" />
+        <button
+          onClick={() => setMostrarValores(!mostrarValores)}
+          className={`
+            mb-6 flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md border
+            transition-all
+            ${
+              mostrarValores
+                ? 'text-gray-700 border-gray-300 hover:bg-gray-100'
+                : 'text-red-600 border-red-300 bg-red-50 hover:bg-red-100'
+            }
+          `}
+        >
+          {mostrarValores ? <EyeOff size={16}/> : <Eye size={16} />}
+          {mostrarValores ? 'Ocultar valores' : 'Mostrar valores'}
+        </button>
+      </div>
+      
       {/* Quick Stats - Top 4 Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-6 border border-purple-200">
@@ -84,8 +106,8 @@ export default function Financeiro() {
             <div>
               <p className="text-gray-600 text-sm">Saldo Anual</p>
               <p className={`text-2xl font-bold ${saldoAnual >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                R$ {Math.abs(saldoAnual).toFixed(2).replace('.', ',')}
-              </p>
+                R$ {esconderReceita(Math.abs(saldoAnual).toFixed(2).replace('.', ','))}
+              </p> 
             </div>
             {saldoAnual >= 0 ? (
               <TrendingUp size={32} className="text-green-500" />
@@ -98,14 +120,14 @@ export default function Financeiro() {
         <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
           <p className="text-gray-600 text-sm">Entradas (mês)</p>
           <p className="text-2xl font-bold text-green-600">
-            R$ {(resumo?.totalEntradas || 0).toFixed(2).replace('.', ',')}
+            R$ {esconderReceita((resumo?.totalEntradas || 0).toFixed(2).replace('.', ','))}
           </p>
         </div>
 
         <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-6 border border-red-200">
           <p className="text-gray-600 text-sm">Saídas (mês)</p>
           <p className="text-2xl font-bold text-red-600">
-            R$ {Math.abs(resumo?.totalSaidas || 0).toFixed(2).replace('.', ',')}
+            R$ {esconderReceita(Math.abs(resumo?.totalSaidas || 0).toFixed(2).replace('.', ','))}
           </p>
         </div>
 
@@ -114,7 +136,7 @@ export default function Financeiro() {
             <div>
               <p className="text-gray-600 text-sm">Saldo Mensal</p>
               <p className={`text-2xl font-bold ${saldoMensal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                R$ {Math.abs(saldoMensal).toFixed(2).replace('.', ',')}
+                R$ {esconderReceita(Math.abs(saldoMensal).toFixed(2).replace('.', ','))}
               </p>
             </div>
             {saldoMensal >= 0 ? (
@@ -183,10 +205,10 @@ export default function Financeiro() {
             Movimento Anual ({ano})
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            <ResumoCard titulo="Entradas" valor={resumoAnual.totalEntradas} />
-            <ResumoCard titulo="Saídas" valor={resumoAnual.totalSaidas - resumoAnual.totalCredito} />
-            <ResumoCard titulo="Saldo" valor={resumoAnual.totalEntradas + (resumoAnual.totalSaidas - resumoAnual.totalCredito)} />
-            <ResumoCard titulo="Crédito" valor={resumoAnual.totalCredito} />
+            <ResumoCard titulo="Entradas" valor={esconderReceita(resumoAnual.totalEntradas.toFixed(2))} />
+            <ResumoCard titulo="Saídas" valor={esconderReceita((resumoAnual.totalSaidas.toFixed(2) - resumoAnual.totalCredito.toFixed(2)).toString())} />
+            <ResumoCard titulo="Saldo" valor={esconderReceita((resumoAnual.totalEntradas.toFixed(2) - (resumoAnual.totalSaidas.toFixed(2) - resumoAnual.totalCredito.toFixed(2))).toFixed(2).toString())} />
+            <ResumoCard titulo="Crédito" valor={esconderReceita(resumoAnual.totalCredito.toFixed(2))} />
           </div>
         </div>
 
@@ -197,10 +219,10 @@ export default function Financeiro() {
             Movimento Mensal ({mes}/{ano})
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            <ResumoCard titulo="Entradas" valor={resumo.totalEntradas} />
-            <ResumoCard titulo="Saídas" valor={resumo.totalSaidas - resumo.totalCredito} />
-            <ResumoCard titulo="Saldo" valor={(resumo.totalEntradas) + (resumo.totalSaidas - resumo.totalCredito)} />
-            <ResumoCard titulo="Crédito" valor={resumo.totalCredito} />
+            <ResumoCard titulo="Entradas" valor={esconderReceita(resumo.totalEntradas.toFixed(2))} />
+            <ResumoCard titulo="Saídas" valor={esconderReceita((resumo.totalSaidas.toFixed(2) - resumo.totalCredito.toFixed(2)).toString())} />
+            <ResumoCard titulo="Saldo" valor={esconderReceita((resumo.totalEntradas.toFixed(2) - (resumo.totalSaidas.toFixed(2) - resumo.totalCredito.toFixed(2))).toFixed(2).toString())} />
+            <ResumoCard titulo="Crédito" valor={esconderReceita(resumo.totalCredito.toFixed(2))} />
           </div>
         </div>
       </div>
@@ -212,12 +234,12 @@ export default function Financeiro() {
             Por Contexto
           </h3>
           <div className="grid grid-cols-3 gap-3">
-            <ResumoCard titulo="Entradas Loja" valor={resumo.totalEntradasLoja} />
-            <ResumoCard titulo="Saídas Loja" valor={resumo.totalSaidasLoja} />
-            <ResumoCard titulo="Total Loja" valor={resumo.totalLoja} />
-            <ResumoCard titulo="Entradas Pessoal" valor={resumo.totalEntradasPessoal} />
-            <ResumoCard titulo="Saídas Pessoal" valor={resumo.totalSaidasPessoal} />
-            <ResumoCard titulo="Total Pessoal" valor={resumo.totalPessoal} />
+            <ResumoCard titulo="Entradas Loja" valor={esconderReceita(resumo.totalEntradasLoja.toFixed(2))} />
+            <ResumoCard titulo="Saídas Loja" valor={esconderReceita(resumo.totalSaidasLoja.toFixed(2))} />
+            <ResumoCard titulo="Total Loja" valor={esconderReceita(resumo.totalLoja.toFixed(2))} />
+            <ResumoCard titulo="Entradas Pessoal" valor={esconderReceita(resumo.totalEntradasPessoal.toFixed(2))} />
+            <ResumoCard titulo="Saídas Pessoal" valor={esconderReceita(resumo.totalSaidasPessoal.toFixed(2))} />
+            <ResumoCard titulo="Total Pessoal" valor={esconderReceita(resumo.totalPessoal.toFixed(2))} />
           </div>
         </div>
 
@@ -227,6 +249,7 @@ export default function Financeiro() {
           dados={movs}
           onEditar={abrirEdicao}
           onExcluir={excluirMovimentacao}
+          esconderReceita={esconderReceita}
         />
       </div>
 

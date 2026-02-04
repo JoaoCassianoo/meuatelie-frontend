@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, BarChart3, Package, CheckSquare, ShoppingCart, Truck, Sparkles } from 'lucide-react';
+import { Menu, X, BarChart3, Package, CheckSquare, ShoppingCart, Truck, Sparkles, HouseIcon } from 'lucide-react';
 
 type Props = {
   activePage: string;
@@ -10,7 +10,7 @@ export function Sidebar({ activePage, onNavigate }: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
-    { id: 'inicial', label: 'Dashboard', icon: BarChart3 },
+    { id: 'inicial', label: 'Visão Geral', icon: HouseIcon },
     { id: 'financeiro', label: 'Financeiro', icon: BarChart3 },
     { id: 'estoque', label: 'Estoque', icon: Package },
     { id: 'pecasProntas', label: 'Peças Prontas', icon: Sparkles },

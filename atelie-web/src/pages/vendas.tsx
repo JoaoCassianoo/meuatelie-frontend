@@ -3,7 +3,7 @@ import { PageHeader } from '../components/PageHeader';
 import { obterVendas, deletarVenda, registrarVenda } from '../api/vendas.api';
 import { obterTodosMateriais } from '../api/materiais.api';
 import type { Venda } from '../api/vendas.api';
-import { Plus, TrendingUp, Trash2, Edit2, X, Save } from 'lucide-react';
+import { Plus, TrendingUp, Trash2, Edit2, X, Save, Eye, EyeOff } from 'lucide-react';
 import PecasProntas from './pecasProntas';
 import { obterPecasNaoVendidas,  obterTodasPecasProntas,  type PecaPronta } from '../api/pecasProntas.api';
 
@@ -15,6 +15,11 @@ export default function Vendas() {
   const [totalVendas, setTotalVendas] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [vendaEditando, setVendaEditando] = useState<Venda | null>(null);
+  const [mostrarValores, setMostrarValores] = useState(false);
+
+  function esconderReceita(valor: string) {
+    return mostrarValores ? valor : "***,**";
+  }
 
   const [formData, setFormData] = useState({
     cliente: '',
@@ -110,11 +115,28 @@ export default function Vendas() {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="flex justify-between items-center mb-6">
-        <PageHeader title="Vendas" />
+      <div className="flex flex-col justify-between mb-6">
+        <div className="flex items-center text-center justify-between">
+          <PageHeader title="Vendas" />
+          <button
+            onClick={() => setMostrarValores(!mostrarValores)}
+            className={`
+              mb-6 flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md border
+              transition-all
+              ${
+                mostrarValores
+                  ? 'text-gray-700 border-gray-300 hover:bg-gray-100'
+                  : 'text-red-600 border-red-300 bg-red-50 hover:bg-red-100'
+              }
+            `}
+          >
+            {mostrarValores ? <EyeOff size={16}/> : <Eye size={16} />}
+            {mostrarValores ? 'Ocultar valores' : 'Mostrar valores'}
+          </button>
+        </div>
         <button
           onClick={abrirModalNova}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex gap-2 transition-colors"
         >
           <Plus size={20} />
           Nova Venda
@@ -212,7 +234,7 @@ export default function Vendas() {
                 <p className="text-sm font-semibold opacity-90">Total de Vendas</p>
                 <p className="text-4xl font-bold flex items-center gap-2 mt-2">
                   <TrendingUp size={32} />
-                  R$ {totalVendas.toFixed(2).replace('.', ',')}
+                  R$ {esconderReceita(totalVendas.toFixed(2).replace('.', ','))}
                 </p>
               </div>
             </div>
@@ -244,7 +266,7 @@ export default function Vendas() {
                         <td className="px-6 py-4 text-gray-700">{getPecaProntaNome(venda.pecaProntaId)}</td>
                         <td className="px-6 py-4 text-gray-700">{venda.observacao}</td>
                         <td className="px-6 py-4 text-right font-bold text-green-600">
-                          R$ {(venda.valorVenda).toFixed(2).replace('.', ',')}
+                          R$ {esconderReceita((venda.valorVenda).toFixed(2).replace('.', ','))}
                         </td>
                         <td className="px-6 py-4 text-center">
                           <div className="flex justify-center gap-2">

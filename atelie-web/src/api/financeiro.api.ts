@@ -54,7 +54,7 @@ export async function importarMovimentacoesCSV(
   mes: number
 ) {
   const formData = new FormData();
-  formData.append('file', arquivo);
+  formData.append('arquivo', arquivo);
   return api.post(`/Financeiro/importar?ano=${ano}&mes=${mes}`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',

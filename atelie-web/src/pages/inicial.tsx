@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { obterResumoAnual, obterResumoMensal } from '../api/financeiro.api';
 import { ResumoCard } from '../components/financeiro/ResumoMensal';
 import { PageHeader } from '../components/PageHeader';
-import { BarChart3, Package, CheckSquare, ShoppingCart, Truck, TrendingUp, TrendingDown } from 'lucide-react';
+import { BarChart3, Package, CheckSquare, ShoppingCart, Truck, TrendingUp, TrendingDown, Eye, EyeOff } from 'lucide-react';
 
 export default function Inicial({setActivePage}: {setActivePage?: (page: string) => void}) {
     const [resumoAnual, setResumoAnual] = useState<any>(null);
@@ -10,11 +10,17 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
     const anoAtual = new Date().getFullYear();
     const mesAtual = new Date().getMonth() + 1;
     const mesNome = new Date().toLocaleString('pt-BR', { month: 'long' }).toLocaleUpperCase();
+    const [mostrarValores, setMostrarValores] = useState(false);
+
 
     useEffect(() => {
         obterResumoAnual(anoAtual).then(setResumoAnual); 
         obterResumoMensal(anoAtual, mesAtual).then(setResumoMensal);
     }, []);
+
+    function esconderReceita(valor: string) {
+        return mostrarValores ? valor : "***,**";
+    }
 
     // Calculate balance
     const saldoAnual = (resumoAnual?.totalEntradas || 0) + (resumoAnual?.totalSaidas || 0);
@@ -30,7 +36,24 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
 
     return (
         <div className='p-6 lg:p-8'>
-            <PageHeader title="Dashboard" />
+            <div className="flex items-center text-center justify-between">
+                <PageHeader title="Visão Geral" />
+                <button
+                onClick={() => setMostrarValores(!mostrarValores)}
+                className={`
+                    mb-6 flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md border
+                    transition-all
+                    ${
+                    mostrarValores
+                        ? 'text-gray-700 border-gray-300 hover:bg-gray-100'
+                        : 'text-red-600 border-red-300 bg-red-50 hover:bg-red-100'
+                    }
+                `}
+                >
+                {mostrarValores ? <EyeOff size={16}/> : <Eye size={16} />}
+                {mostrarValores ? 'Ocultar valores' : 'Mostrar valores'}
+                </button>
+            </div>
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -39,7 +62,7 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
                         <div>
                             <p className="text-gray-600 text-sm">Saldo Anual</p>
                             <p className={`text-2xl font-bold ${saldoAnual >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                R$ {saldoAnual.toFixed(2).replace('.', ',')}
+                                R$ {esconderReceita(saldoAnual.toFixed(2).replace('.', ','))}
                             </p>
                         </div>
                         {saldoAnual >= 0 ? (
@@ -53,14 +76,14 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
                 <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
                     <p className="text-gray-600 text-sm">Entradas (mês)</p>
                     <p className="text-2xl font-bold text-green-600">
-                        R$ {(resumoMensal?.totalEntradas || 0).toFixed(2).replace('.', ',')}
+                        R$ {esconderReceita((resumoMensal?.totalEntradas || 0).toFixed(2).replace('.', ','))}
                     </p>
                 </div>
 
                 <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-6 border border-red-200">
                     <p className="text-gray-600 text-sm">Saídas (mês)</p>
                     <p className="text-2xl font-bold text-red-600">
-                        R$ {(resumoMensal?.totalSaidas || 0).toFixed(2).replace('.', ',')}
+                        R$ {esconderReceita((resumoMensal?.totalSaidas || 0).toFixed(2).replace('.', ','))}
                     </p>
                 </div>
 
@@ -69,7 +92,7 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
                         <div>
                             <p className="text-gray-600 text-sm">Saldo Mensal</p>
                             <p className={`text-2xl font-bold ${saldoMensal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                R$ {saldoMensal.toFixed(2).replace('.', ',')}
+                                R$ {esconderReceita(saldoMensal.toFixed(2).replace('.', ','))}
                             </p>
                         </div>
                         {saldoMensal >= 0 ? (
@@ -115,12 +138,12 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
                         <span className='text-blue-600 font-semibold'>{anoAtual}</span>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        <ResumoCard titulo="Entradas" valor={resumoAnual ? resumoAnual.totalEntradas : 0} />
-                        <ResumoCard titulo="Saídas" valor={resumoAnual ? resumoAnual.totalSaidas : 0} />
-                        <ResumoCard titulo="Loja" valor={resumoAnual ? resumoAnual.totalLoja : 0} />
-                        <ResumoCard titulo="Pessoal" valor={resumoAnual ? resumoAnual.totalPessoal : 0} />
-                        <ResumoCard titulo="Débito" valor={resumoAnual ? resumoAnual.totalDebito : 0} />
-                        <ResumoCard titulo="Crédito" valor={resumoAnual ? resumoAnual.totalCredito : 0} />
+                        <ResumoCard titulo="Entradas" valor={esconderReceita(resumoAnual ? resumoAnual.totalEntradas : 0)} />
+                        <ResumoCard titulo="Saídas" valor={esconderReceita(resumoAnual ? resumoAnual.totalSaidas : 0)} />
+                        <ResumoCard titulo="Loja" valor={esconderReceita(resumoAnual ? resumoAnual.totalLoja : 0)} />
+                        <ResumoCard titulo="Pessoal" valor={esconderReceita(resumoAnual ? resumoAnual.totalPessoal : 0)} />
+                        <ResumoCard titulo="Débito" valor={esconderReceita(resumoAnual ? resumoAnual.totalDebito : 0)} />
+                        <ResumoCard titulo="Crédito" valor={esconderReceita(resumoAnual ? resumoAnual.totalCredito : 0)} />
                     </div>
                 </div>
 
@@ -132,12 +155,12 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
                         <span className='text-green-600 font-semibold'>{mesNome}</span>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        <ResumoCard titulo="Entradas" valor={resumoMensal ? resumoMensal.totalEntradas : 0} />
-                        <ResumoCard titulo="Saídas" valor={resumoMensal ? resumoMensal.totalSaidas : 0} />
-                        <ResumoCard titulo="Loja" valor={resumoMensal ? resumoMensal.totalLoja : 0} />
-                        <ResumoCard titulo="Pessoal" valor={resumoMensal ? resumoMensal.totalPessoal : 0} />
-                        <ResumoCard titulo="Débito" valor={resumoMensal ? resumoMensal.totalDebito : 0} />
-                        <ResumoCard titulo="Crédito" valor={resumoMensal ? resumoMensal.totalCredito : 0} />
+                        <ResumoCard titulo="Entradas" valor={esconderReceita(resumoMensal ? resumoMensal.totalEntradas : 0)} />
+                        <ResumoCard titulo="Saídas" valor={esconderReceita(resumoMensal ? resumoMensal.totalSaidas : 0)} />
+                        <ResumoCard titulo="Loja" valor={esconderReceita(resumoMensal ? resumoMensal.totalLoja : 0)} />
+                        <ResumoCard titulo="Pessoal" valor={esconderReceita(resumoMensal ? resumoMensal.totalPessoal : 0)} />
+                        <ResumoCard titulo="Débito" valor={esconderReceita(resumoMensal ? resumoMensal.totalDebito : 0)} />
+                        <ResumoCard titulo="Crédito" valor={esconderReceita(resumoMensal ? resumoMensal.totalCredito : 0)} />
                     </div>
                 </div>
             </div>

@@ -5,7 +5,7 @@ import { obterTodosMateriais, criarMaterial, deletarMaterial, atualizarMaterial,
 import type { MovimentacaoEstoque } from '../api/estoque.api';
 import type { Material } from '../api/materiais.api';
 import { CategoriaMaterial, TipoMovimentacao } from '../types/estoque';
-import { Plus, TrendingDown, Trash2, X, Save, Edit2 } from 'lucide-react';
+import { Plus, TrendingDown, Trash2, X, Save, Edit2, Eye, EyeOff } from 'lucide-react';
 
 export default function Estoque() {
   const [tab, setTab] = useState<'materiais' | 'movimentacoes'>('materiais');
@@ -18,6 +18,11 @@ export default function Estoque() {
   const [movimentacaoModalOpen, setMovimentacaoModalOpen] = useState(false);
   const [tipoMovimentacao, setTipoMovimentacao] = useState<TipoMovimentacao>(TipoMovimentacao.Entrada);
   const [resumo, setResumo] = useState<{ quantidadeTotalPecas: number; valorTotalEstoque: number } | null>(null);
+  const [mostrarValores, setMostrarValores] = useState(false);
+
+  function esconderReceita(valor: string) {
+    return mostrarValores ? valor : "***,**";
+  }
 
   
   const [formMaterial, setFormMaterial] = useState({
@@ -153,8 +158,25 @@ export default function Estoque() {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="flex justify-between items-center mb-6">
-        <PageHeader title="Estoque" />
+      <div className="flex flex-col justify-between mb-6">
+        <div className="flex items-center text-center justify-between">
+          <PageHeader title="Estoque" />
+          <button
+            onClick={() => setMostrarValores(!mostrarValores)}
+            className={`
+              mb-6 flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md border
+              transition-all
+              ${
+              mostrarValores
+                  ? 'text-gray-700 border-gray-300 hover:bg-gray-100'
+                  : 'text-red-600 border-red-300 bg-red-50 hover:bg-red-100'
+              }
+            `}
+          >
+            {mostrarValores ? <EyeOff size={16}/> : <Eye size={16} />}
+            {mostrarValores ? 'Ocultar valores' : 'Mostrar valores'}
+          </button>
+        </div>
         <div className="flex gap-2">
           <button
             onClick={() => setTab('materiais')}
@@ -184,7 +206,7 @@ export default function Estoque() {
         <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
           <p className="text-gray-600 text-sm">Valor Total Estoque</p>
           <p className="text-2xl font-bold text-green-600">
-            R$ {Math.abs(resumo?.valorTotalEstoque || 0).toFixed(2).replace('.', ',')}
+            R$ {esconderReceita(Math.abs(resumo?.valorTotalEstoque || 0).toFixed(2).replace('.', ','))}
           </p>
         </div>
 
@@ -430,12 +452,12 @@ export default function Estoque() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Preço Unit.:</span>
-                        <span className="font-bold text-gray-900">R$ {mat.valor.toFixed(2).replace('.', ',')}</span>
+                        <span className="font-bold text-gray-900">R$ {esconderReceita(mat.valor.toFixed(2).replace('.', ','))}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Total:</span>
                         <span className="font-bold text-green-600">
-                          R$ {(mat.quantidade * mat.valor).toFixed(2).replace('.', ',')}
+                          R$ {esconderReceita((mat.quantidade * mat.valor).toFixed(2).replace('.', ','))}
                         </span>
                       </div>
                     </div>
