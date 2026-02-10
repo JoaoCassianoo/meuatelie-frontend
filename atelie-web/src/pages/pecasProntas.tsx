@@ -7,7 +7,6 @@ import {
   criarPecaPronta,
   atualizarPecaPronta,
   deletarPecaPronta,
-  marcarComoVendida,
   adicionarMaterial,
   removerMaterial,
   TipoPecaPronta,
