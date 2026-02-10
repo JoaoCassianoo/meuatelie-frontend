@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
-import { obterTodosMateriais, criarMaterial, atualizarMaterial, deletarMaterial, obterResumo } from '../api/materiais.api';
+import { obterTodosMateriais, criarMaterial, atualizarMaterial, deletarMaterial } from '../api/materiais.api';
 import type { Material } from '../api/materiais.api';
 import { CategoriaMaterial } from '../types/estoque';
 import { Plus, Trash2, Edit2, X, Save } from 'lucide-react';

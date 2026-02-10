@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { obterTodasListas, adicionarTarefa, concluirTarefa, desmarcaTarefa, deletarTarefa, deletarLista, criarLista } from '../api/todo.api';
-import type { TodoLista, Tarefa } from '../api/todo.api';
+import type { TodoLista } from '../api/todo.api';
 import { Plus, Trash2, Check, X } from 'lucide-react';
 
 export default function TodoList() {

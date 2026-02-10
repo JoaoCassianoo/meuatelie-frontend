@@ -14,13 +14,7 @@ import {
   type PecaPronta,
 } from '../api/pecasProntas.api';
 import { obterTodosMateriais, type Material } from '../api/materiais.api';
-import { Trash2, Plus, X, Save, Eye, EyeOff } from 'lucide-react';
-
-const tipoColors: Record<string, { bg: string; text: string; label: string }> = {
-  'JaExistente': { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Já Existente' },
-  'Produzida': { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Produzida' },
-  'Manutencao': { bg: 'bg-teal-100', text: 'text-teal-700', label: 'Manutenção' },
-};
+import { Trash2, Plus, X, Save, Eye } from 'lucide-react';
 
 interface FormData {
   titulo: string;
@@ -169,16 +163,6 @@ export default function PecasProntas() {
     } catch (error) {
       console.error('Erro ao deletar peça:', error);
       alert('Erro ao deletar peça');
-    }
-  }
-
-  async function marcarVendida(id: number) {
-    try {
-      await marcarComoVendida(id);
-      await carregarDados();
-    } catch (error) {
-      console.error('Erro ao marcar como vendida:', error);
-      alert('Erro ao marcar como vendida');
     }
   }
 

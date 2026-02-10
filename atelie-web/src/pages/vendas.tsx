@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { obterVendas, deletarVenda, registrarVenda } from '../api/vendas.api';
-import { obterTodosMateriais } from '../api/materiais.api';
 import type { Venda } from '../api/vendas.api';
 import { Plus, TrendingUp, Trash2, Edit2, X, Save, Eye, EyeOff } from 'lucide-react';
-import PecasProntas from './pecasProntas';
 import { obterPecasNaoVendidas,  obterTodasPecasProntas,  type PecaPronta } from '../api/pecasProntas.api';
 
 export default function Vendas() {
