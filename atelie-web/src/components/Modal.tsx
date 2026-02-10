@@ -4,7 +4,7 @@ type Props = {
   children: React.ReactNode;
 };
 
-export function Modal({ isOpen, onClose, children }: Props) {
+export function Modal({ isOpen, children }: Props) {
   if (!isOpen) return null;
 
   return (
