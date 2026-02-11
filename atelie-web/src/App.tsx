@@ -1,36 +1,43 @@
-import { useState } from 'react';
-import { Sidebar } from './components/Sidebar';
-import Inicial from './pages/inicial';
-import Financeiro from './pages/financeiro';
-import Estoque from './pages/estoque';
-import TodoList from './pages/todo';
-import Vendas from './pages/vendas';
-import Encomendas from './pages/encomendas';
-import PecasProntas from './pages/pecasProntas';
+import { useState } from 'react'
+import { Sidebar } from './components/Sidebar'
+import Inicial from './pages/inicial'
+import Financeiro from './pages/financeiro'
+import Estoque from './pages/estoque'
+import TodoList from './pages/todo'
+import Vendas from './pages/vendas'
+import Encomendas from './pages/encomendas'
+import PecasProntas from './pages/pecasProntas'
+import Login from './pages/login'
+import { useAuth } from './context/AuthContext'
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('inicial');
+  const { session, loading } = useAuth()
+  const [currentPage, setCurrentPage] = useState('inicial')
+
+  if (loading) return <div>Carregando...</div>
+  
+  if (!session) return <Login />
 
   const renderPage = () => {
     switch (currentPage) {
       case 'inicial':
-        return <Inicial setActivePage={setCurrentPage} />;
+        return <Inicial setActivePage={setCurrentPage} />
       case 'financeiro':
-        return <Financeiro />;
+        return <Financeiro />
       case 'estoque':
-        return <Estoque />;
+        return <Estoque />
       case 'todo':
-        return <TodoList />;
+        return <TodoList />
       case 'vendas':
-        return <Vendas />;
+        return <Vendas />
       case 'encomendas':
-        return <Encomendas />;
+        return <Encomendas />
       case 'pecasProntas':
-        return <PecasProntas />;
+        return <PecasProntas />
       default:
-        return <Inicial />;
+        return <Inicial />
     }
-  };
+  }
 
   return (
     <div className="flex">
@@ -39,5 +46,5 @@ export default function App() {
         {renderPage()}
       </main>
     </div>
-  );
+  )
 }

@@ -10,9 +10,10 @@ export interface Material {
   valor: number;
 }
 
-export async function obterTodosMateriais() {
-  const response = await api.get('/Materiais');
-  return response.data;
+export async function obterTodosMateriais(page: number) {
+  const response = await api.get(`/Materiais?page=${page}&pageSize=20`);
+  console.log(response.data);
+  return response.data.dados;
 }
 
 export async function obterMaterialPorId(id: number) {

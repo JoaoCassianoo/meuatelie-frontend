@@ -35,7 +35,7 @@ export default function Encomendas() {
       setLoading(true);
       const [encs, mats] = await Promise.all([
         obterEncomendas(),
-        obterTodosMateriais(),
+        obterTodosMateriais(1),
       ]);
       setEncomendas(encs || []);
       setMateriais(mats || []);

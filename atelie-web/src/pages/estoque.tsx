@@ -41,14 +41,14 @@ export default function Estoque() {
 
   useEffect(() => {
     carregarDados();
-  }, [materialFilter]);
+  }, []);
 
   async function carregarDados() {
     try {
       setLoading(true);
       const [movs, mats] = await Promise.all([
         obterMovimentacoes(materialFilter),
-        obterTodosMateriais(),
+        obterTodosMateriais(1),
       ]);
       const resumoData = await obterResumo();
       setResumo(resumoData);
