@@ -35,7 +35,7 @@ export default function Materiais() {
   async function carregarMateriais() {
     try {
       setLoading(true);
-      const mats = await obterTodosMateriais(1);
+      const mats = await obterTodosMateriais();
       setMateriais(mats || []);
     } catch (error) {
       console.error('Erro ao carregar materiais:', error);

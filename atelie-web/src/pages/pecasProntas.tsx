@@ -60,7 +60,7 @@ export default function PecasProntas() {
     try {
       setLoading(true);
       const [mats, pecasList] = await Promise.all([
-        obterTodosMateriais(1),
+        obterTodosMateriais(),
         getPecasFiltered(),
       ]);
       setMateriais(mats || []);

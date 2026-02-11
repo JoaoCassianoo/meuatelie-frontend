@@ -48,7 +48,7 @@ export default function Estoque() {
       setLoading(true);
       const [movs, mats] = await Promise.all([
         obterMovimentacoes(materialFilter),
-        obterTodosMateriais(1),
+        obterTodosMateriais(),
       ]);
       const resumoData = await obterResumo();
       setResumo(resumoData);
