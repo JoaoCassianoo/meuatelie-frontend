@@ -1,9 +1,8 @@
 import { api } from './http';
 
 export const TipoPecaPronta = {
-  JaExistente: 0,
-  Produzida: 1,
-  Manutencao: 2,
+  Produzida: 0,
+  Manutencao: 1,
 } as const;
 
 export type TipoPecaPronta = typeof TipoPecaPronta[keyof typeof TipoPecaPronta];
@@ -59,11 +58,13 @@ export async function obterTodasPecasProntas() {
   return response.data;
 }
 
+//nao precisa dessa aqui
 export async function obterPecasNaoVendidas() {
   const response = await api.get('/PecasProntas/nao-vendidas');
   return response.data;
 }
 
+//nao precisa dessas aqui
 export async function obterPecasPorTipo(tipo: TipoPecaPronta) {
   const response = await api.get(`/PecasProntas/tipo/${tipo}`);
   return response.data;
@@ -73,6 +74,8 @@ export async function obterPecaProntaPorId(id: number) {
   const response = await api.get(`/PecasProntas/${id}`);
   return response.data;
 }
+
+//.....
 
 export async function atualizarPecaPronta(id: number, data: AtualizarPecaProntaRequest) {
   const response = await api.put(`/PecasProntas/${id}`, data);

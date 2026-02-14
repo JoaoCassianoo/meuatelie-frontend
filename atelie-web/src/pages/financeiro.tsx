@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PeriodoSelector } from '../components/ui/PeriodoSelector';
 import { ResumoCard } from '../components/financeiro/ResumoMensal';
-import { obterResumoAnual, obterResumoMensal } from '../api/financeiro.api';
+import { ContextoFinanceiro, MeioPagamento, obterResumoAnual, obterResumoMensal } from '../api/financeiro.api';
 import { listarMovimentacoes } from '../api/financeiro.api';
 import { MovimentacoesTabela } from '../components/financeiro/MovimentacoesTabela';
 import type { MovimentacaoFinanceira } from '../types/financeiro';
@@ -9,6 +9,7 @@ import { NovaMovimentacaoModal } from '../components/financeiro/NovaMovimentacao
 import { excluirMovimentacao as excluirApi, importarMovimentacoesCSV } from '../api/financeiro.api';
 import { PageHeader } from '../components/PageHeader';
 import { TrendingUp, TrendingDown, BarChart3, Plus, Upload, EyeOff, Eye } from 'lucide-react';
+import { cache, carregarCacheDoLocalStorage, carregarResumo, verReceita } from '../api/cache.api';
 
 
 
@@ -22,6 +23,7 @@ export default function Financeiro() {
   const [contexto, setContexto] = useState(3);
   const [resumo, setResumo] = useState<any>(null);
   const [resumoAnual, setResumoAnual] = useState<any>(null);
+  const [movsBase, setMovsBase] = useState<MovimentacaoFinanceira[]>([]);
   const [movs, setMovs] = useState<MovimentacaoFinanceira[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [movimentacaoEditando, setMovimentacaoEditando] =  useState<MovimentacaoFinanceira | null>(null);
@@ -38,7 +40,7 @@ export default function Financeiro() {
     try {
       await importarMovimentacoesCSV(arquivo, ano, mes);
       alert('Movimentações importadas com sucesso!');
-      listarMovimentacoes(ano, mes, tipo, meio, contexto).then(setMovs);
+      listarMovimentacoes(ano, mes).then(setMovs);
       obterResumoMensal(ano, mes).then(setResumo);
     } catch (error) {
       alert('Erro ao importar movimentações');
@@ -47,6 +49,12 @@ export default function Financeiro() {
 
     // Reset input
     event.target.value = '';
+  }
+
+  async function mostrarValor(){
+    let valor = !mostrarValores;
+    setMostrarValores(valor);
+    await verReceita(valor);
   }
 
   function esconderReceita(valor: string) {
@@ -65,16 +73,56 @@ export default function Financeiro() {
 
     await excluirApi(id);
 
-    listarMovimentacoes(ano, mes, tipo, meio, contexto).then(setMovs);
+    listarMovimentacoes(ano, mes).then(setMovs);
     obterResumoMensal(ano, mes).then(setResumo);
     }
 
 
   useEffect(() =>{
-    listarMovimentacoes(ano, mes, tipo, meio, contexto).then(setMovs);
-    obterResumoMensal(ano, mes).then(setResumo);
-    obterResumoAnual(ano).then(setResumoAnual);
-  }, [ano, mes, tipo, movimentacaoEditando, modalOpen, meio, contexto]);
+    async function init() {
+      carregarCacheDoLocalStorage();
+      if(!cache.resumo.mensal || !cache.resumo.anual) {
+        await carregarResumo(ano, mes);
+      }
+      const movimentacoes = await listarMovimentacoes(ano, mes);
+      setMovsBase(movimentacoes);
+      setMovs(movimentacoes);
+      setResumo(cache.resumo.mensal);
+      setResumoAnual(cache.resumo.anual);
+      setMostrarValores(cache.mostrarValor);
+    }
+    init();
+  }, [ano, mes]);
+
+  useEffect(() => {
+    let base = [...movsBase]; // 👈 ORIGINAL
+    let filtrado = base;
+
+    if (tipo === 2)
+      filtrado = filtrado.filter(m => m.valor < 0);
+
+    else if (tipo === 1)
+      filtrado = filtrado.filter(m => m.valor > 0);
+
+    if (contexto === 2)
+      filtrado = filtrado.filter(m => m.contexto === ContextoFinanceiro.Pessoal);
+
+    else if (contexto === 1)
+      filtrado = filtrado.filter(m => m.contexto === ContextoFinanceiro.Loja);
+
+    if (meio === 3)
+      filtrado = filtrado.filter(m => m.meioPagamento === MeioPagamento.Pix);
+
+    else if (meio === 2)
+      filtrado = filtrado.filter(m => m.meioPagamento === MeioPagamento.CartaoDebito);
+
+    else if (meio === 1)
+      filtrado = filtrado.filter(m => m.meioPagamento === MeioPagamento.CartaoCredito);
+
+    setMovs(filtrado);
+
+  }, [tipo, meio, contexto]);
+
 
   if (!resumo || !resumoAnual) return <p>Carregando...</p>;
 
@@ -83,7 +131,7 @@ export default function Financeiro() {
       <div className="flex items-center text-center justify-between">
         <PageHeader title="Financeiro" />
         <button
-          onClick={() => setMostrarValores(!mostrarValores)}
+          onClick={() => mostrarValor()}
           className={`
             mb-6 flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md border
             transition-all
@@ -220,7 +268,7 @@ export default function Financeiro() {
           </h3>
           <div className="grid grid-cols-2 gap-3">
             <ResumoCard titulo="Entradas" valor={esconderReceita(resumo.totalEntradas.toFixed(2))} />
-            <ResumoCard titulo="Saídas" valor={esconderReceita((resumo.totalSaidas.toFixed(2) - resumo.totalCredito.toFixed(2)).toString())} />
+            <ResumoCard titulo="Saídas" valor={esconderReceita((resumo.totalSaidas.toFixed(2) - resumo.totalCredito.toFixed(2)).toFixed(2).toString())} />
             <ResumoCard titulo="Saldo" valor={esconderReceita((resumo.totalEntradas.toFixed(2) - (resumo.totalSaidas.toFixed(2) - resumo.totalCredito.toFixed(2))).toFixed(2).toString())} />
             <ResumoCard titulo="Crédito" valor={esconderReceita(resumo.totalCredito.toFixed(2))} />
           </div>
@@ -259,7 +307,7 @@ export default function Financeiro() {
         mes={mes}
         movimentacao={movimentacaoEditando}
         onClose={() => { setModalOpen(false); setMovimentacaoEditando(null); }}
-        onSaved={() => {listarMovimentacoes(ano, mes, tipo, meio, contexto).then(setMovs)}}
+        onSaved={() => {listarMovimentacoes(ano, mes).then(setMovs)}}
         />
 
     </div>

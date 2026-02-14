@@ -3,6 +3,7 @@ import { PageHeader } from '../components/PageHeader';
 import { obterTodasListas, adicionarTarefa, concluirTarefa, desmarcaTarefa, deletarTarefa, deletarLista, criarLista } from '../api/todo.api';
 import type { TodoLista } from '../api/todo.api';
 import { Plus, Trash2, Check, X } from 'lucide-react';
+import { cache, carregarListas } from '../api/cache.api';
 
 export default function TodoList() {
   const [listas, setListas] = useState<TodoLista[]>([]);
@@ -11,27 +12,24 @@ export default function TodoList() {
   const [novasTarefas, setNovasTarefas] = useState<Record<number, string>>({});
 
   useEffect(() => {
-    carregarListas();
-  }, []);
-
-  async function carregarListas() {
-    try {
+    async function init() {
       setLoading(true);
-      const dados = await obterTodasListas();
-      setListas(dados || []);
-    } catch (error) {
-      console.error('Erro ao carregar listas:', error);
-    } finally {
+      if (cache.listas.length === 0) {
+        await carregarListas();
+      }
+      setListas(cache.listas);
       setLoading(false);
     }
-  }
+    init();
+  }, []);
 
   async function criarNovaLista() {
     if (!novaListaTitulo.trim()) return;
     try {
       await criarLista(novaListaTitulo);
       setNovaListaTitulo('');
-      carregarListas();
+      await carregarListas();
+      setListas(cache.listas);
     } catch (error) {
       console.error('Erro ao criar lista:', error);
     }
@@ -43,7 +41,8 @@ export default function TodoList() {
     try {
       await adicionarTarefa(listaId, descricao);
       setNovasTarefas({ ...novasTarefas, [listaId]: '' });
-      carregarListas();
+      await carregarListas();
+      setListas(cache.listas);
     } catch (error) {
       console.error('Erro ao adicionar tarefa:', error);
     }
@@ -56,7 +55,8 @@ export default function TodoList() {
       } else {
         await concluirTarefa(tarefaId);
       }
-      carregarListas();
+      await carregarListas();
+      setListas(cache.listas);
     } catch (error) {
       console.error('Erro ao atualizar tarefa:', error);
     }
@@ -65,7 +65,8 @@ export default function TodoList() {
   async function deletarTarefaFunc(tarefaId: number) {
     try {
       await deletarTarefa(tarefaId);
-      carregarListas();
+      await carregarListas();
+      setListas(cache.listas);
     } catch (error) {
       console.error('Erro ao deletar tarefa:', error);
     }
@@ -75,7 +76,8 @@ export default function TodoList() {
     if (!confirm('Deletar esta lista?')) return;
     try {
       await deletarLista(listaId);
-      carregarListas();
+      await carregarListas();
+      setListas(cache.listas);
     } catch (error) {
       console.error('Erro ao deletar lista:', error);
     }

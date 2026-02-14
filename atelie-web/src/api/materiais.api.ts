@@ -3,6 +3,7 @@ import { CategoriaMaterial } from '../types/estoque';
 
 export interface Material {
   id?: number;
+  atelieId: number;
   nome: string;
   categoria: CategoriaMaterial;
   tamanho?: string;
@@ -15,6 +16,7 @@ export async function obterTodosMateriais() {
   return response.data;
 }
 
+//acho que nao precisa
 export async function obterMaterialPorId(id: number) {
   const response = await api.get(`/Materiais/${id}`);
   return response.data;
@@ -24,6 +26,8 @@ export async function obterMaterialPorCategoria(categoria: CategoriaMaterial) {
   const response = await api.get(`/Materiais/categoria/${categoria}`);
   return response.data;
 }
+
+//de nenhuma dessas duas acima
 
 export async function obterResumo() {
   const response = await api.get(`/Materiais/resumo`);

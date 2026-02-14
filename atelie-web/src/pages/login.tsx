@@ -1,20 +1,20 @@
 import { useState } from "react"
 import { supabase } from "../api/supabase"
+import { carregarAtelie } from "../api/cache.api"
 
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
   const handleLogin = async () => {
-    console.log("clicou login 🔥")
 
     const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
     })
-
+    await carregarAtelie();
     console.log({ data, error })
-    }
+  }
 
 
   return (

@@ -5,6 +5,7 @@ import { obterTodosMateriais } from '../api/materiais.api';
 import type { Encomenda } from '../api/encomendas.api';
 import type { Material } from '../api/materiais.api';
 import { Trash2, Plus, X, Save } from 'lucide-react';
+import { adicionarEncomenda, cache, carregarEncomendas, carregarMateriais } from '../api/cache.api';
 
 const statusColors: Record<StatusEncomenda, { bg: string; text: string; label: string }> = {
   [StatusEncomenda.Pendente]: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Pendente' },
@@ -27,24 +28,20 @@ export default function Encomendas() {
   });
 
   useEffect(() => {
-    carregarDados();
-  }, []);
-
-  async function carregarDados() {
-    try {
+    async function init() {
       setLoading(true);
-      const [encs, mats] = await Promise.all([
-        obterEncomendas(),
-        obterTodosMateriais(),
-      ]);
-      setEncomendas(encs || []);
-      setMateriais(mats || []);
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-    } finally {
+      if (cache.encomendas.length === 0) {
+        await carregarEncomendas();
+      }
+      if (cache.material.materiais.length === 0) {
+        await carregarMateriais();
+      }
+      setEncomendas(cache.encomendas);
+      setMateriais(cache.material.materiais);
       setLoading(false);
     }
-  }
+    init();
+  }, []);
 
   async function criarNovaEncomenda() {
     if (!formData.descricao || !formData.materialId || !formData.valorOrcado || !formData.cliente) {
@@ -53,16 +50,17 @@ export default function Encomendas() {
     }
 
     try {
-      await criarEncomenda({
+      let encomenda = await criarEncomenda({
         descricao: formData.descricao,
         materialId: Number(formData.materialId),
+        status: StatusEncomenda.Pendente,
         valorOrcado: Number(formData.valorOrcado),
         cliente: formData.cliente,
         observacao: formData.observacao,
       });
       setFormData({ descricao: '', materialId: '', valorOrcado: '', cliente: '', observacao: '' });
       setModalOpen(false);
-      carregarDados();
+      adicionarEncomenda(encomenda);
       alert('Encomenda criada com sucesso!');
     } catch (error) {
       console.error('Erro ao criar encomenda:', error);
@@ -73,7 +71,8 @@ export default function Encomendas() {
   async function mudarStatus(id: number, novoStatus: StatusEncomenda) {
     try {
       await atualizarStatusEncomenda(id, novoStatus);
-      carregarDados();
+      await carregarEncomendas();
+      setEncomendas(cache.encomendas);
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
     }
@@ -83,7 +82,8 @@ export default function Encomendas() {
     if (!confirm('Deseja realmente deletar esta encomenda?')) return;
     try {
       await deletarEncomenda(id);
-      carregarDados();
+      await carregarEncomendas();
+      setEncomendas(cache.encomendas);
     } catch (error) {
       console.error('Erro ao deletar encomenda:', error);
     }

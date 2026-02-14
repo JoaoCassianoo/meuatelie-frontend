@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { obterResumoAnual, obterResumoMensal } from '../api/financeiro.api';
+import {  useEffect, useState } from 'react';
 import { ResumoCard } from '../components/financeiro/ResumoMensal';
 import { PageHeader } from '../components/PageHeader';
 import { BarChart3, Package, CheckSquare, ShoppingCart, Truck, TrendingUp, TrendingDown, Eye, EyeOff } from 'lucide-react';
+import { cache, carregarCacheDoLocalStorage, carregarResumo, verReceita } from '../api/cache.api';
 
 export default function Inicial({setActivePage}: {setActivePage?: (page: string) => void}) {
     const [resumoAnual, setResumoAnual] = useState<any>(null);
@@ -14,9 +14,23 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
 
 
     useEffect(() => {
-        obterResumoAnual(anoAtual).then(setResumoAnual); 
-        obterResumoMensal(anoAtual, mesAtual).then(setResumoMensal);
+        async function init() {
+            carregarCacheDoLocalStorage();
+            if(!cache.resumo.mensal || !cache.resumo.anual) {
+                await carregarResumo(anoAtual, mesAtual);
+            }
+            setResumoMensal(cache.resumo.mensal);
+            setResumoAnual(cache.resumo.anual);
+            setMostrarValores(cache.mostrarValor);
+        }
+        init();
     }, []);
+
+    async function mostrarValor(){
+        let valor = !mostrarValores;
+        setMostrarValores(valor);
+        await verReceita(valor);
+    }
 
     function esconderReceita(valor: string) {
         return mostrarValores ? valor : "***,**";
@@ -39,7 +53,7 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
             <div className="flex items-center text-center justify-between">
                 <PageHeader title="Visão Geral" />
                 <button
-                onClick={() => setMostrarValores(!mostrarValores)}
+                onClick={() => mostrarValor()}
                 className={`
                     mb-6 flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md border
                     transition-all

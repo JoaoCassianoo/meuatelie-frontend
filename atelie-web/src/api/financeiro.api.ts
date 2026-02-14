@@ -17,19 +17,15 @@ export async function obterResumoMensal(
   return response.data;
 }
 
-export async function listarMovimentacoes(
-  ano: number,
-  mes: number,
-  tipo: number,
-  meio: number,
-  contexto: number
-): Promise<MovimentacaoFinanceira[]> {
-  const response = await api.get(
-    `/Financeiro/movimentacoes?ano=${ano}&mes=${mes}&tipo=${tipo}&meio=${meio}&contexto=${contexto}`
-  );
-  return response.data;
-  console.log(response.data);
-}
+  export async function listarMovimentacoes(
+    ano: number,
+    mes: number
+  ): Promise<MovimentacaoFinanceira[]> {
+    const response = await api.get(
+      `/Financeiro/movimentacoes?ano=${ano}&mes=${mes}`
+    );
+    return response.data;
+  }
 
 export function criarMovimentacao(
   data: Omit<MovimentacaoFinanceira, 'id'>

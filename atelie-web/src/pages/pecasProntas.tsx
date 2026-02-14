@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import {
   obterTodasPecasProntas,
@@ -14,6 +14,7 @@ import {
 } from '../api/pecasProntas.api';
 import { obterTodosMateriais, type Material } from '../api/materiais.api';
 import { Trash2, Plus, X, Save, Eye } from 'lucide-react';
+import { cache, carregarMateriais, carregarPecasProntas } from '../api/cache.api';
 
 interface FormData {
   titulo: string;
@@ -43,7 +44,7 @@ export default function PecasProntas() {
     titulo: '',
     valor: '',
     descricao: '',
-    tipo: TipoPecaPronta.JaExistente,
+    tipo: TipoPecaPronta.Produzida,
     fotoUrl: '',
     vendida: false,
   });
@@ -53,24 +54,35 @@ export default function PecasProntas() {
   });
 
   useEffect(() => {
-    carregarDados();
-  }, [filterStatus, filterTipo]);
-
-  async function carregarDados() {
-    try {
+    async function init() {
       setLoading(true);
-      const [mats, pecasList] = await Promise.all([
-        obterTodosMateriais(),
-        getPecasFiltered(),
-      ]);
-      setMateriais(mats || []);
-      setPecas(pecasList || []);
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-    } finally {
+      if (cache.pecasProntas.length === 0) {
+        await carregarPecasProntas();
+      }
+      if(cache.material.materiais.length === 0) {
+        await carregarMateriais();
+      }
+      setMateriais(cache.material.materiais);
+      setPecas(cache.pecasProntas);
       setLoading(false);
     }
-  }
+    init();
+  }, []);
+
+  useEffect(() => {    
+    let filtered = cache.pecasProntas;
+    if (filterStatus === 'nao-vendidas') {
+      filtered = filtered.filter(p => !p.vendida);
+    }
+   
+    if(filterTipo == TipoPecaPronta.Produzida) {
+      filtered = filtered.filter(p => p.tipo === 0);
+    }
+    else if(filterTipo == TipoPecaPronta.Manutencao) {
+      filtered = filtered.filter(p => p.tipo === 1);
+    }
+    setPecas(filtered);
+  },[filterStatus, filterTipo]);
 
   const converterParaBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -95,17 +107,6 @@ export default function PecasProntas() {
     }));
   };
 
-
-  async function getPecasFiltered() {
-    if (filterStatus === 'nao-vendidas') {
-      return await obterPecasNaoVendidas();
-    }
-    if (filterTipo !== 'todas') {
-      return await obterPecasPorTipo(filterTipo as TipoPecaPronta);
-    }
-    return await obterTodasPecasProntas();
-  }
-
   async function criarOuAtualizar() {
     if (!formData.titulo || !formData.valor) {
       alert('Título e Valor são obrigatórios');
@@ -115,9 +116,8 @@ export default function PecasProntas() {
     try {
       // Converte tipo string para enum value
       const tipoMap: { [key: string]: TipoPecaPronta } = {
-        '0': TipoPecaPronta.JaExistente,
-        '1': TipoPecaPronta.Produzida,
-        '2': TipoPecaPronta.Manutencao,
+        '0': TipoPecaPronta.Produzida,
+        '1': TipoPecaPronta.Manutencao,
       };
 
       const data = {
@@ -143,8 +143,10 @@ export default function PecasProntas() {
       } else {
         await criarPecaPronta(data);
       }
-
-      await carregarDados();
+      await carregarPecasProntas();
+      await carregarMateriais();
+      setPecas([...cache.pecasProntas]);
+      setMateriais([...cache.material.materiais]);
       limparFormulario();
       setModalOpen(false);
     } catch (error) {
@@ -158,7 +160,10 @@ export default function PecasProntas() {
 
     try {
       await deletarPecaPronta(id);
-      await carregarDados();
+      await carregarPecasProntas();
+      await carregarMateriais();
+      setPecas([...cache.pecasProntas]);
+      setMateriais([...cache.material.materiais]);
     } catch (error) {
       console.error('Erro ao deletar peça:', error);
       alert('Erro ao deletar peça');
@@ -177,7 +182,10 @@ export default function PecasProntas() {
         parseInt(materialForm.materialId),
         parseInt(materialForm.quantidadeUsada)
       );
-      await carregarDados();
+      await carregarPecasProntas();
+      await carregarMateriais();
+      setPecas([...cache.pecasProntas]);
+      setMateriais([...cache.material.materiais]);
       setMaterialForm({ materialId: '', quantidadeUsada: '' });
     } catch (error) {
       console.error('Erro ao adicionar material:', error);
@@ -192,7 +200,10 @@ export default function PecasProntas() {
 
     try {
       await removerMaterial(selectedPecaId, materialId);
-      await carregarDados();
+      await carregarPecasProntas();
+      await carregarMateriais();
+      setPecas([...cache.pecasProntas]);
+      setMateriais([...cache.material.materiais]);
     } catch (error) {
       console.error('Erro ao remover material:', error);
       alert('Erro ao remover material');
@@ -204,7 +215,7 @@ export default function PecasProntas() {
       titulo: '',
       valor: '',
       descricao: '',
-      tipo: TipoPecaPronta.JaExistente,
+      tipo: TipoPecaPronta.Produzida,
       fotoUrl: '',
       vendida: false,
     });
@@ -264,7 +275,6 @@ export default function PecasProntas() {
                 className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="todas">Todas</option>
-                <option value={TipoPecaPronta.JaExistente}>Já Existente</option>
                 <option value={TipoPecaPronta.Produzida}>Produzida</option>
                 <option value={TipoPecaPronta.Manutencao}>Manutenção</option>
               </select>
@@ -311,16 +321,6 @@ export default function PecasProntas() {
                   <div className="flex flex-wrap gap-2 md:flex-col md:w-auto">
                     
                     {peca.tipo === TipoPecaPronta.Produzida && (
-                      <button
-                        onClick={() => {}}
-                        className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors text-sm text-center"
-                        title="Status"
-                      >
-                        PRODUZIDA
-                      </button>
-                    )}
-
-                    {peca.tipo === TipoPecaPronta.JaExistente && (
                       <button
                         onClick={() => {}}
                         className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors text-sm text-center"
@@ -444,7 +444,6 @@ export default function PecasProntas() {
                   onChange={(e) => setFormData({ ...formData, tipo: e.target.value as unknown as TipoPecaPronta})}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value={TipoPecaPronta.JaExistente}>Já Existente</option>
                   <option value={TipoPecaPronta.Produzida}>Produzida</option>
                   <option value={TipoPecaPronta.Manutencao}>Manutenção</option>
                 </select>

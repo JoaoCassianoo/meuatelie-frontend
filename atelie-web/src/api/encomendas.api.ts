@@ -8,7 +8,7 @@ export interface Encomenda {
   valorOrcado: number;
   cliente: string;
   observacao?: string;
-  status?: StatusEncomenda;
+  status: StatusEncomenda;
   dataCriacao?: string;
 }
 
@@ -19,13 +19,12 @@ export async function criarEncomenda(encomenda: Omit<Encomenda, 'id'>) {
   return response.data;
 }
 
-export async function obterEncomendas(status?: StatusEncomenda) {
-  const response = await api.get('/Encomendas', {
-    params: status ? { status } : {},
-  });
+export async function obterEncomendas() {
+  const response = await api.get('/Encomendas');
   return response.data;
 }
 
+//nao precisa dessa aqui
 export async function obterEncomendaPorId(id: number) {
   const response = await api.get(`/Encomendas/${id}`);
   return response.data;

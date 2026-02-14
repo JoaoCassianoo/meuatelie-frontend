@@ -20,6 +20,7 @@ export async function obterVendas() {
   return response.data;
 }
 
+//nao precisa dessas aqui
 export async function obterVendasPorPeriodo(dataInicio: string, dataFim: string) {
   const response = await api.get('/Vendas/periodo', {
     params: { dataInicio, dataFim },
@@ -33,6 +34,7 @@ export async function obterTotalVendas(dataInicio?: string, dataFim?: string) {
   });
   return response.data;
 }
+//.....
 
 export async function deletarVenda(id: number) {
   return api.delete(`/Vendas/${id}`);

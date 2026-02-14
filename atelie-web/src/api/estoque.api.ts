@@ -7,7 +7,7 @@ export interface MovimentacaoEstoque {
   quantidade: number;
   tipo: TipoMovimentacao;
   observacao?: string;
-  dataCriacao?: string;
+  data?: string;
 }
 
 export async function registrarEntrada(materialId: number, quantidade: number, observacao?: string) {
@@ -27,6 +27,7 @@ export async function obterMovimentacoes(materialId?: number) {
   return response.data;
 }
 
+//nao precisa dessa aqui
 export async function obterMovimentacoesPorPeriodo(dataInicio: string, dataFim: string) {
   const response = await api.get('/Estoque/movimentacoes/periodo', {
     params: { dataInicio, dataFim },

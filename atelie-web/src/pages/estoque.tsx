@@ -6,6 +6,7 @@ import type { MovimentacaoEstoque } from '../api/estoque.api';
 import type { Material } from '../api/materiais.api';
 import { CategoriaMaterial, TipoMovimentacao } from '../types/estoque';
 import { Plus, TrendingDown, Trash2, X, Save, Edit2, Eye, EyeOff } from 'lucide-react';
+import { adicionarMaterialCache, cache, carregarMateriais, carregarMovimentacoes, verReceita } from '../api/cache.api';
 
 export default function Estoque() {
   const [tab, setTab] = useState<'materiais' | 'movimentacoes'>('materiais');
@@ -40,26 +41,38 @@ export default function Estoque() {
   });
 
   useEffect(() => {
-    carregarDados();
-  }, []);
-
-  async function carregarDados() {
-    try {
+    async function init() {
       setLoading(true);
-      const [movs, mats] = await Promise.all([
-        obterMovimentacoes(materialFilter),
-        obterTodosMateriais(),
-      ]);
-      const resumoData = await obterResumo();
-      setResumo(resumoData);
-      setMovimentacoes(movs || []);
-      setMateriais(mats || []);
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-    } finally {
+      if (cache.material.materiais.length === 0) {
+        await carregarMateriais();
+      }
+      if(cache.movimentacoes.length === 0) {
+        await carregarMovimentacoes();
+      }
+      setMateriais([...cache.material.materiais]);
+      setMovimentacoes([...cache.movimentacoes]);
+      setResumo({ quantidadeTotalPecas: cache.material.quantidade, valorTotalEstoque: cache.material.valor });
+      setMostrarValores(cache.mostrarValor);
       setLoading(false);
     }
+    init();
+  }, []);
+
+  async function mostrarValor(){
+    let valor = !mostrarValores;
+    setMostrarValores(valor);
+    await verReceita(valor);
   }
+
+  useEffect(() => {
+    let movimentacaoFiltradas = cache.movimentacoes;
+    if (materialFilter) {
+      movimentacaoFiltradas = movimentacaoFiltradas.filter(m => m.materialId === materialFilter);
+    }
+    setMovimentacoes(movimentacaoFiltradas);
+  }, [materialFilter]);
+
+
 
   function abrirModalNovo() {
     setMaterialEditando(null);
@@ -87,6 +100,7 @@ export default function Estoque() {
 
     try {
       const dados = {
+        atelieId: 0,
         nome: formMaterial.nome,
         categoria: Number(formMaterial.categoria) as typeof CategoriaMaterial[keyof typeof CategoriaMaterial],
         tamanho: formMaterial.tamanho,
@@ -96,16 +110,19 @@ export default function Estoque() {
 
       if (materialEditando) {
         await atualizarMaterial(materialEditando.id!, dados);
+        await carregarMateriais();
         alert('Material atualizado com sucesso!');
       } else {
-        await criarMaterial(dados);
+        let materialnovo = await criarMaterial(dados);
+        await adicionarMaterialCache(materialnovo);
         alert('Material criado com sucesso!');
       }
 
       setFormMaterial({ nome: '', categoria: '', tamanho: '', quantidade: '', valor: '' });
       setMaterialEditando(null);
       setMaterialModalOpen(false);
-      carregarDados();
+      setMateriais([...cache.material.materiais]);
+
     } catch (error) {
       console.error('Erro ao salvar material:', error);
       alert('Erro ao salvar material');
@@ -134,7 +151,11 @@ export default function Estoque() {
       }
       setFormMovimentacao({ materialId: '', quantidade: '', observacao: '' });
       setMovimentacaoModalOpen(false);
-      carregarDados();
+      await carregarMateriais();
+      await carregarMovimentacoes();
+      setMateriais([...cache.material.materiais]);
+      setMovimentacoes([...cache.movimentacoes]);
+      setResumo({ quantidadeTotalPecas: cache.material.quantidade, valorTotalEstoque: cache.material.valor });
       alert(`${tipoMovimentacao === TipoMovimentacao.Entrada ? 'Entrada' : 'Saída'} registrada com sucesso!`);
     } catch (error) {
       console.error('Erro ao registrar movimentação:', error);
@@ -146,7 +167,9 @@ export default function Estoque() {
     if (!confirm('Deletar este material?')) return;
     try {
       await deletarMaterial(id);
-      carregarDados();
+      await carregarMateriais();
+      setMateriais([...cache.material.materiais]);
+      setResumo({ quantidadeTotalPecas: cache.material.quantidade, valorTotalEstoque: cache.material.valor });
     } catch (error) {
       console.error('Erro ao deletar:', error);
     }
@@ -162,7 +185,7 @@ export default function Estoque() {
         <div className="flex items-center text-center justify-between">
           <PageHeader title="Estoque" />
           <button
-            onClick={() => setMostrarValores(!mostrarValores)}
+            onClick={() => mostrarValor()}
             className={`
               mb-6 flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md border
               transition-all
@@ -361,7 +384,7 @@ export default function Estoque() {
                 >
                   <option value="">Selecione um material</option>
                   {materiais.map(m => (
-                    <option key={m.id} value={m.id}>{m.nome}</option>
+                    <option key={m.id} value={m.id}>{m.atelieId} - {m.nome}</option>
                   ))}
                 </select>
               </div>
@@ -426,7 +449,7 @@ export default function Estoque() {
                   <div key={mat.id} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <p>{mat.id}</p>
+                        <p>{mat.atelieId}</p>
                         <h3 className="text-lg font-bold text-gray-900">{mat.nome}</h3>
                         <p className="text-sm text-gray-600">{mat.tamanho}</p>
                       </div>
@@ -486,7 +509,7 @@ export default function Estoque() {
                 >
                   <option value="">Todos</option>
                   {materiais.map(m => (
-                    <option key={m.id} value={m.id}>{m.nome}</option>
+                    <option key={m.id} value={m.id}>{m.id} - {m.nome}</option>
                   ))}
                 </select>
               </div>
@@ -514,7 +537,7 @@ export default function Estoque() {
                         movimentacoes.map((mov, idx) => (
                           <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
                             <td className="px-6 py-4 text-sm text-gray-700">
-                              {new Date(mov.dataCriacao || '').toLocaleDateString('pt-BR')}
+                              {new Date(mov.data || '').toLocaleDateString('pt-BR')}
                             </td>
                             <td className="px-6 py-4 font-medium text-gray-900">{getMaterialNome(mov.materialId)}</td>
                             <td className="px-6 py-4 text-center">

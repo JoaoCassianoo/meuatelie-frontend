@@ -24,6 +24,7 @@ export async function obterTodasListas() {
   return response.data;
 }
 
+//nao precisa dessa
 export async function obterListaPorId(id: number) {
   const response = await api.get(`/TodoList/${id}`);
   return response.data;

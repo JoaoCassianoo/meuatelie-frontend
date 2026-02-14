@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, BarChart3, Package, CheckSquare, ShoppingCart, Truck, Sparkles, HouseIcon } from 'lucide-react';
+import { Menu, X, BarChart3, Package, CheckSquare, ShoppingCart, Truck, Sparkles, HouseIcon, User } from 'lucide-react';
 
 type Props = {
   activePage: string;
@@ -17,6 +17,7 @@ export function Sidebar({ activePage, onNavigate }: Props) {
     { id: 'todo', label: 'To-do List', icon: CheckSquare },
     { id: 'vendas', label: 'Vendas', icon: ShoppingCart },
     { id: 'encomendas', label: 'Encomendas', icon: Truck },
+    { id: 'perfil', label: 'Perfil', icon: User },
   ];
 
   const handleNavigate = (id: string) => {

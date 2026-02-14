@@ -4,6 +4,7 @@ import { obterVendas, deletarVenda, registrarVenda } from '../api/vendas.api';
 import type { Venda } from '../api/vendas.api';
 import { Plus, TrendingUp, Trash2, Edit2, X, Save, Eye, EyeOff } from 'lucide-react';
 import { obterPecasNaoVendidas,  obterTodasPecasProntas,  type PecaPronta } from '../api/pecasProntas.api';
+import { cache, carregarPecasProntas, carregarVendas, verReceita } from '../api/cache.api';
 
 export default function Vendas() {
   const [vendas, setVendas] = useState<Venda[]>([]);
@@ -27,26 +28,28 @@ export default function Vendas() {
   });
 
   useEffect(() => {
-    carregarDados();
-  }, [modalOpen]);
-
-  async function carregarDados() {
-    try {
+    async function init() {
       setLoading(true);
-      const [vend, pecas, pecasNV] = await Promise.all([
-        obterVendas(),
-        obterPecasNaoVendidas(),
-        obterTodasPecasProntas(),
-      ]);
-      setVendas(vend || []);
-      setPecasProntas(pecas || []);
-      setPecasProntasNV(pecasNV || []);
-      setTotalVendas((vend || []).reduce((sum: number, v: { valorVenda: number; quantidade: number; }) => sum + v.valorVenda * v.quantidade, 0));
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-    } finally {
+      if (cache.vendas.length === 0) {
+        await carregarVendas();
+      }
+      if(cache.pecasProntas.length === 0) {
+        await carregarPecasProntas();
+      }
+      let pecasNV = cache.pecasProntas.filter(p => !p.vendida);
+      setVendas(cache.vendas);
+      setPecasProntas(cache.pecasProntas);
+      setPecasProntasNV(pecasNV);
+      setMostrarValores(cache.mostrarValor);
       setLoading(false);
     }
+    init();
+  }, []);
+
+  async function mostrarValor(){
+    let valor = !mostrarValores;
+    setMostrarValores(valor);
+    await verReceita(valor);
   }
 
   function setValorPecaSelecionada(pecaId: string) {
@@ -88,8 +91,11 @@ export default function Vendas() {
       };
       await registrarVenda(dados);
       setFormData({ cliente: '', pecaProntaId: '', valorVenda: '', observacao: '' });
+      await carregarVendas();
+      await carregarPecasProntas();
+      setVendas(cache.vendas);
+      setPecasProntas(cache.pecasProntas);
       setModalOpen(false);
-      carregarDados();
     } catch (error) {
       console.error('Erro ao salvar venda:', error);
       alert('Erro ao salvar venda');
@@ -100,14 +106,17 @@ export default function Vendas() {
     if (!confirm('Deletar esta venda?')) return;
     try {
       await deletarVenda(id);
-      carregarDados();
+      await carregarVendas();
+      await carregarPecasProntas();
+      setVendas(cache.vendas);
+      setPecasProntas(cache.pecasProntas);
     } catch (error) {
       console.error('Erro ao deletar:', error);
     }
   }
 
   const getPecaProntaNome = (id: number) => {
-    return pecasProntasNV.find(m => m.id === id)?.titulo || `Peça Pronta #${id}`;
+    return pecasProntas.find(m => m.id === id)?.titulo || `Peça Pronta #${id}`;
   };
 
 
@@ -117,7 +126,7 @@ export default function Vendas() {
         <div className="flex items-center text-center justify-between">
           <PageHeader title="Vendas" />
           <button
-            onClick={() => setMostrarValores(!mostrarValores)}
+            onClick={() => mostrarValor()}
             className={`
               mb-6 flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md border
               transition-all
@@ -174,7 +183,7 @@ export default function Vendas() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Selecione uma peça pronta</option>
-                  {pecasProntas.map(m => (
+                  {pecasProntasNV.map(m => (
                     <option key={m.id} value={m.id}>{m.titulo}</option>
                   ))}
                 </select>
