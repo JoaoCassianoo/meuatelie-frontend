@@ -1,5 +1,4 @@
 import {  useEffect, useState } from 'react';
-import { ResumoCard } from '../components/financeiro/ResumoMensal';
 import { PageHeader } from '../components/PageHeader';
 import { BarChart3, Package, CheckSquare, ShoppingCart, Truck, TrendingUp, TrendingDown, Eye, EyeOff, User } from 'lucide-react';
 import { cache, carregarCacheDoLocalStorage, carregarResumo, verReceita } from '../api/cache.api';
@@ -9,7 +8,6 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
     const [resumoMensal, setResumoMensal] = useState<any>(null);
     const anoAtual = new Date().getFullYear();
     const mesAtual = new Date().getMonth() + 1;
-    const mesNome = new Date().toLocaleString('pt-BR', { month: 'long' }).toLocaleUpperCase();
     const [mostrarValores, setMostrarValores] = useState(false);
 
 

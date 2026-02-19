@@ -55,23 +55,34 @@ export function NovaMovimentacaoModal({
   }, [movimentacao, isOpen, ano, mes]);
 
   async function salvar() {
-    if (movimentacao && movimentacao.id) {
-      await atualizarMovimentacao(movimentacao.id, {
-        id: movimentacao.id,
-        descricao,
-        valor,
-        data,
-        contexto,
-        meioPagamento,
-      });
-    } else {
-      await criarMovimentacao({
-        descricao,
-        valor,
-        data,
-        contexto,
-        meioPagamento,
-      });
+    try{
+      if (movimentacao && movimentacao.id) {
+        await atualizarMovimentacao(movimentacao.id, {
+          id: movimentacao.id,
+          descricao,
+          valor,
+          data,
+          contexto,
+          meioPagamento,
+        });
+      } else {
+        await criarMovimentacao({
+          descricao,
+          valor,
+          data,
+          contexto,
+          meioPagamento,
+        });
+      }
+    }catch(error: any){
+      console.error('Erro ao criar ou atualizar movimentação:', error);
+
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro criar ou atualizar movimentação';
+
+      alert(mensagem);
     }
 
     onSaved();

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
-import { obterMovimentacoes, registrarEntrada, registrarSaida } from '../api/estoque.api';
-import { obterTodosMateriais, criarMaterial, deletarMaterial, atualizarMaterial, obterResumo } from '../api/materiais.api';
+import { registrarEntrada, registrarSaida } from '../api/estoque.api';
+import { criarMaterial, deletarMaterial, atualizarMaterial} from '../api/materiais.api';
 import type { MovimentacaoEstoque } from '../api/estoque.api';
 import type { Material } from '../api/materiais.api';
 import { CategoriaMaterial, TipoMovimentacao } from '../types/estoque';

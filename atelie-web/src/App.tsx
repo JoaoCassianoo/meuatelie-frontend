@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Sidebar } from './components/Sidebar'
 import Inicial from './pages/inicial'
 import Financeiro from './pages/financeiro'

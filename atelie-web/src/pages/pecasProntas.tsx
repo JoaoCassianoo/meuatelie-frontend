@@ -1,9 +1,6 @@
-import { use, useEffect, useState } from 'react';
+import {useEffect, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import {
-  obterTodasPecasProntas,
-  obterPecasNaoVendidas,
-  obterPecasPorTipo,
   criarPecaPronta,
   atualizarPecaPronta,
   deletarPecaPronta,
@@ -12,7 +9,7 @@ import {
   TipoPecaPronta,
   type PecaPronta,
 } from '../api/pecasProntas.api';
-import { obterTodosMateriais, type Material } from '../api/materiais.api';
+import { type Material } from '../api/materiais.api';
 import { Trash2, Plus, X, Save, Eye } from 'lucide-react';
 import { cache, carregarMateriais, carregarPecasProntas } from '../api/cache.api';
 

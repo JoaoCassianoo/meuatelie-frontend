@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
-import { obterVendas, deletarVenda, registrarVenda } from '../api/vendas.api';
+import { deletarVenda, registrarVenda } from '../api/vendas.api';
 import type { Venda } from '../api/vendas.api';
 import { Plus, TrendingUp, Trash2, Edit2, X, Save, Eye, EyeOff } from 'lucide-react';
-import { obterPecasNaoVendidas,  obterTodasPecasProntas,  type PecaPronta } from '../api/pecasProntas.api';
+import { type PecaPronta } from '../api/pecasProntas.api';
 import { cache, carregarPecasProntas, carregarVendas, verReceita } from '../api/cache.api';
 
 export default function Vendas() {
@@ -39,12 +39,22 @@ export default function Vendas() {
       let pecasNV = cache.pecasProntas.filter(p => !p.vendida);
       setVendas(cache.vendas);
       setPecasProntas(cache.pecasProntas);
+      setarValores();
       setPecasProntasNV(pecasNV);
       setMostrarValores(cache.mostrarValor);
       setLoading(false);
     }
     init();
   }, []);
+
+  function setarValores()
+  {
+    let valorVendas = 0;
+      vendas.map((venda) => (
+        valorVendas += venda.valorVenda
+      ))
+      setTotalVendas(valorVendas);
+  }
 
   async function mostrarValor(){
     let valor = !mostrarValores;
@@ -95,10 +105,15 @@ export default function Vendas() {
       await carregarPecasProntas();
       setVendas(cache.vendas);
       setPecasProntas(cache.pecasProntas);
+      setarValores();
       setModalOpen(false);
-    } catch (error) {
-      console.error('Erro ao salvar venda:', error);
-      alert('Erro ao salvar venda');
+    } catch (error: any) {
+      alert('Erro ao registrar venda:');
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro ao registrar venda';
+      console.error(mensagem);
     }
   }
 
@@ -110,8 +125,15 @@ export default function Vendas() {
       await carregarPecasProntas();
       setVendas(cache.vendas);
       setPecasProntas(cache.pecasProntas);
-    } catch (error) {
-      console.error('Erro ao deletar:', error);
+      
+      setVendas(cache.vendas);
+    }  catch (error: any) {
+      alert('Erro ao deletar venda:');
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro ao deletar venda';
+      console.error(mensagem);
     }
   }
 

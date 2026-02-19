@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PeriodoSelector } from '../components/ui/PeriodoSelector';
 import { ResumoCard } from '../components/financeiro/ResumoMensal';
-import { ContextoFinanceiro, MeioPagamento, obterResumoAnual, obterResumoMensal } from '../api/financeiro.api';
+import { ContextoFinanceiro, MeioPagamento, obterResumoMensal } from '../api/financeiro.api';
 import { listarMovimentacoes } from '../api/financeiro.api';
 import { MovimentacoesTabela } from '../components/financeiro/MovimentacoesTabela';
 import type { MovimentacaoFinanceira } from '../types/financeiro';

@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { Menu, X, BarChart3, Package, CheckSquare, ShoppingCart, Truck, Sparkles, HouseIcon, User } from 'lucide-react';
-import { cache } from '../api/cache.api';
-import { PageHeader } from './PageHeader';
 
 type Props = {
   activePage: string;

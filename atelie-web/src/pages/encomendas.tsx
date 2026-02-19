@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
-import { obterEncomendas, atualizarStatusEncomenda, deletarEncomenda, criarEncomenda, StatusEncomenda } from '../api/encomendas.api';
-import { obterTodosMateriais } from '../api/materiais.api';
+import { atualizarStatusEncomenda, deletarEncomenda, criarEncomenda, StatusEncomenda } from '../api/encomendas.api';
 import type { Encomenda } from '../api/encomendas.api';
 import type { Material } from '../api/materiais.api';
 import { Trash2, Plus, X, Save } from 'lucide-react';
