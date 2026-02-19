@@ -6,6 +6,7 @@ interface Props {
   onEditar: (mov: MovimentacaoFinanceira) => void;
   onExcluir: (id: number) => void;
   esconderReceita?: (valor: string) => string;
+  deletandoId?: number | null;
 }
 
 
@@ -14,7 +15,8 @@ export function MovimentacoesTabela({
   dados,
   onEditar,
   onExcluir,
-  esconderReceita
+  esconderReceita,
+  deletandoId
 }: Props) {
    function escondeReceita(valor: string) {
     return esconderReceita ? esconderReceita(valor) : valor;
@@ -97,10 +99,15 @@ export function MovimentacoesTabela({
 
                       <button
                         onClick={() => onExcluir(m.id!)}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                        disabled={deletandoId === m.id}
+                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                         title="Excluir"
                       >
-                        <Trash2 size={18} />
+                        {deletandoId === m.id ? (
+                          <div className="w-4 h-4 border-2 border-red-200 border-t-red-600 rounded-full animate-spin" />
+                        ) : (
+                          <Trash2 size={18} />
+                        )}
                       </button>
                     </div>
                   </td>
@@ -155,9 +162,14 @@ export function MovimentacoesTabela({
 
                 <button
                   onClick={() => onExcluir(m.id!)}
-                  className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
+                  disabled={deletandoId === m.id}
+                  className="p-2 text-red-600 hover:bg-red-100 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  <Trash2 size={18} />
+                  {deletandoId === m.id ? (
+                    <div className="w-4 h-4 border-2 border-red-200 border-t-red-600 rounded-full animate-spin" />
+                  ) : (
+                    <Trash2 size={18} />
+                  )}
                 </button>
               </div>
             </div>

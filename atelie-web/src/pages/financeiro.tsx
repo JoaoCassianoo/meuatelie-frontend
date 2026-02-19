@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { PeriodoSelector } from '../components/ui/PeriodoSelector';
-import { ResumoCard } from '../components/financeiro/ResumoMensal';
 import { ContextoFinanceiro, MeioPagamento, obterResumoMensal } from '../api/financeiro.api';
 import { listarMovimentacoes } from '../api/financeiro.api';
 import { MovimentacoesTabela } from '../components/financeiro/MovimentacoesTabela';
@@ -9,7 +8,8 @@ import { NovaMovimentacaoModal } from '../components/financeiro/NovaMovimentacao
 import { excluirMovimentacao as excluirApi, importarMovimentacoesCSV } from '../api/financeiro.api';
 import { PageHeader } from '../components/PageHeader';
 import { TrendingUp, TrendingDown, BarChart3, Plus, Upload, EyeOff, Eye } from 'lucide-react';
-import { cache, carregarCacheDoLocalStorage, carregarResumo, verReceita } from '../api/cache.api';
+import { cache, carregarCacheDoLocalStorage, carregarResumo } from '../api/cache.api';
+import { ToastContainer, type ToastMessage } from '../components/Toast';
 
 
 
@@ -28,6 +28,9 @@ export default function Financeiro() {
   const [modalOpen, setModalOpen] = useState(false);
   const [movimentacaoEditando, setMovimentacaoEditando] =  useState<MovimentacaoFinanceira | null>(null);
   const [mostrarValores, setMostrarValores] = useState(false);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [importando, setImportando] = useState(false);
+  const [deletando, setDeletando] = useState<number | null>(null);
 
   // Calculate balance
   const saldoAnual = (resumoAnual?.totalEntradas || 0) + ((resumoAnual?.totalSaidas || 0) - (resumoAnual?.totalCredito || 0));
@@ -36,29 +39,49 @@ export default function Financeiro() {
   async function handleImportarCSV(event: React.ChangeEvent<HTMLInputElement>) {
     const arquivo = event.target.files?.[0];
     if (!arquivo) return;
-
+    setImportando(true);
     try {
       await importarMovimentacoesCSV(arquivo, ano, mes);
-      alert('Movimentações importadas com sucesso!');
+      addToast('Movimentações importadas com sucesso!', 'success');
       listarMovimentacoes(ano, mes).then(setMovs);
       obterResumoMensal(ano, mes).then(setResumo);
     } catch (error: any) {
-      alert('Erro ao importar movimentações');
-      const mensagem =
-        error?.response?.data?.erro ||
-        error?.response?.data?.message ||
-        'Erro ao importar movimentações';
-      console.error(mensagem);
+      addToast(error?.response?.data?.erro || error?.response?.data?.message || 'Erro ao importar movimentações', 'error');
+    } finally {
+      setImportando(false);
+      event.target.value = '';
     }
+  }
 
-    // Reset input
-    event.target.value = '';
+  async function excluirMovimentacao(id: number) {
+    const confirmar = confirm('Deseja realmente excluir esta movimentação?');
+    if (!confirmar) return;
+    setDeletando(id);
+    try {
+      await excluirApi(id);
+      listarMovimentacoes(ano, mes).then(setMovs);
+      obterResumoMensal(ano, mes).then(setResumo);
+      addToast('Movimentação excluída com sucesso!', 'success');
+    } catch (error: any) {
+      addToast(error?.response?.data?.erro || error?.response?.data?.message || 'Erro ao excluir movimentação', 'error');
+    } finally {
+      setDeletando(null);
+    }
+  }
+
+  function addToast(message: string, type: 'success' | 'error') {
+    const id = Math.random().toString(36).substr(2, 9);
+    setToasts(prev => [...prev, { id, message, type }]);
+  }
+
+  function removeToast(id: string) {
+    setToasts(prev => prev.filter(t => t.id !== id));
   }
 
   async function mostrarValor(){
     let valor = !mostrarValores;
     setMostrarValores(valor);
-    await verReceita(valor);
+    // verReceita removed as it's not in the API anymore
   }
 
   function esconderReceita(valor: string) {
@@ -68,19 +91,7 @@ export default function Financeiro() {
   function abrirEdicao(mov: MovimentacaoFinanceira) {
     setMovimentacaoEditando(mov);
     setModalOpen(true);
-    }
-
-  async function excluirMovimentacao(id: number) {
-    const confirmar = confirm('Deseja realmente excluir esta movimentação?');
-
-    if (!confirmar) return;
-
-    await excluirApi(id);
-
-    listarMovimentacoes(ano, mes).then(setMovs);
-    obterResumoMensal(ano, mes).then(setResumo);
-    }
-
+  }
 
   useEffect(() =>{
     async function init() {
@@ -128,181 +139,142 @@ export default function Financeiro() {
   }, [tipo, meio, contexto]);
 
 
-  if (!resumo || !resumoAnual) return <p>Carregando...</p>;
+  if (!resumo || !resumoAnual) return (
+    <div className="p-5 lg:p-8 max-w-7xl mx-auto flex flex-col items-center justify-center py-20 gap-3">
+      <div className="relative w-10 h-10"><div className="absolute inset-0 rounded-full border-4 border-blue-100" /><div className="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" /></div>
+      <p className="text-sm text-gray-400">Carregando...</p>
+    </div>
+  );
 
   return (
-    <div className="p-6 lg:p-8">
-      <div className="flex items-center text-center justify-between">
+    <div className="p-5 lg:p-8 max-w-7xl mx-auto">
+      <ToastContainer messages={toasts} onClose={removeToast} />
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
         <PageHeader title="Financeiro" />
-        <button
-          onClick={() => mostrarValor()}
-          className={`
-            mb-6 flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md border
-            transition-all
-            ${
-              mostrarValores
-                ? 'text-gray-700 border-gray-300 hover:bg-gray-100'
-                : 'text-red-600 border-red-300 bg-red-50 hover:bg-red-100'
-            }
-          `}
-        >
-          {mostrarValores ? <EyeOff size={16}/> : <Eye size={16} />}
-          {mostrarValores ? 'Ocultar valores' : 'Mostrar valores'}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => mostrarValor()}
+            className={`flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl border transition-all ${mostrarValores ? 'border-gray-200 text-gray-600 hover:bg-gray-50' : 'border-red-200 text-red-600 bg-red-50 hover:bg-red-100'}`}
+          >
+            {mostrarValores ? <EyeOff size={14}/> : <Eye size={14} />}
+            {mostrarValores ? 'Ocultar' : 'Mostrar valores'}
+          </button>
+          <input
+            type="file"
+            id="csvInput"
+            accept=".csv"
+            className="hidden"
+            onChange={handleImportarCSV}
+          />
+          <button
+            onClick={() => document.getElementById('csvInput')?.click()}
+            disabled={importando}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-xs text-white
+              bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600
+              shadow-md shadow-amber-500/20 transition-all active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed">
+            {importando ? (
+              <><div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Importando</>
+            ) : (
+              <><Upload size={14}/> Importar CSV</>
+            )}
+          </button>
+          <button
+            onClick={() => { setMovimentacaoEditando(null); setModalOpen(true); }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm text-white
+              bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600
+              shadow-md shadow-blue-500/20 transition-all active:scale-[0.97]"
+          >
+            <Plus size={18}/> Nova Movimentação
+          </button>
+        </div>
       </div>
       
       {/* Quick Stats - Top 4 Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3 md:p-6 border border-purple-200">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-4 md:p-5 border border-blue-200 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm">Saldo Anual</p>
-              <p className={`text-xl md:text-2xl font-bold ${saldoAnual >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className="text-xs md:text-sm text-gray-600 font-medium">Saldo Anual</p>
+              <p className={`text-lg md:text-2xl font-bold mt-1 ${saldoAnual >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 R$ {esconderReceita(Math.abs(saldoAnual).toFixed(2).replace('.', ','))}
               </p> 
             </div>
             {saldoAnual >= 0 ? (
-              <TrendingUp size={32} className="text-green-500 w-12px md:w-32px" />
+              <TrendingUp size={24} className="text-green-600 opacity-60" />
             ) : (
-              <TrendingDown size={32} className="text-red-500 w-12px md:w-32px" />
+              <TrendingDown size={24} className="text-red-600 opacity-60" />
             )}
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 md:p-6 border border-green-200">
-          <p className="text-gray-600 text-sm">Entradas (mês)</p>
-          <p className="text-xl md:text-2xl font-bold text-green-600">
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-4 md:p-5 border border-green-200 shadow-sm">
+          <p className="text-xs md:text-sm text-gray-600 font-medium">Entradas (mês)</p>
+          <p className="text-lg md:text-2xl font-bold text-green-600 mt-1">
             R$ {esconderReceita((resumo?.totalEntradas || 0).toFixed(2).replace('.', ','))}
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-3 md:p-6 border border-red-200">
-          <p className="text-gray-600 text-sm">Saídas (mês)</p>
-          <p className="text-xl md:text-2xl font-bold text-red-600">
+        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-4 md:p-5 border border-red-200 shadow-sm">
+          <p className="text-xs md:text-sm text-gray-600 font-medium">Saídas (mês)</p>
+          <p className="text-lg md:text-2xl font-bold text-red-600 mt-1">
             R$ {esconderReceita(Math.abs(resumo?.totalSaidas || 0).toFixed(2).replace('.', ','))}
           </p>
         </div>
 
-         <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 md:p-6 border border-blue-200">
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-4 md:p-5 border border-purple-200 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm">Saldo Mensal</p>
-              <p className={`text-xl md:text-2xl font-bold ${saldoMensal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className="text-xs md:text-sm text-gray-600 font-medium">Saldo Mensal</p>
+              <p className={`text-lg md:text-2xl font-bold mt-1 ${saldoMensal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 R$ {esconderReceita(Math.abs(saldoMensal).toFixed(2).replace('.', ','))}
               </p>
             </div>
             {saldoMensal >= 0 ? (
-              <TrendingUp size={32} className="text-green-500 w-12px md:w-32px" />
+              <TrendingUp size={24} className="text-green-600 opacity-60" />
             ) : (
-              <TrendingDown size={32} className="text-red-500 w-12px md:w-32px" />
+              <TrendingDown size={24} className="text-red-600 opacity-60" />
             )}
           </div>
         </div>
       </div>
 
-      {/* Header com Filtros e Botão */}
-      <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <div className="flex flex-col md:flex-row justify-between md:items-center mb-4">
-          <div className="flex items-center gap-2 pb-3 md:pb-0">
-            <BarChart3 size={24} className="text-blue-600" />
-            <h2 className="text-xl font-bold">Movimentações</h2>
-          </div>
-          <div className="flex flex-col md:flex-row gap-2">
-            <input
-              type="file"
-              id="csvInput"
-              accept=".csv"
-              className="hidden"
-              onChange={handleImportarCSV}
-            />
-            <button
-              onClick={() => document.getElementById('csvInput')?.click()}
-              className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-            >
-              <Upload size={20} />
-              Importar CSV
-            </button>
-            <button
-              onClick={() => { setMovimentacaoEditando(null); setModalOpen(true); }}
-              className="text-sm bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-            >
-              <Plus size={20} />
-              Nova Movimentação
-            </button>
-          </div>
+      {/* Filtros */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <BarChart3 size={20} className="text-blue-600" />
+          <h3 className="font-semibold text-gray-900">Filtros</h3>
         </div>
-
-        <div className="bg-gray-50 rounded-lg p-4">
-          <PeriodoSelector
-            ano={ano}
-            mes={mes}
-            tipo={tipo}
-            meio={meio}
-            contexto={contexto}
-            onAnoChange={setAno}
-            onMesChange={setMes}
-            onTipoChange={setTipo}
-            onMeioChange={setMeio}
-            onContextoChange={setContexto}
-          />
-        </div>
+        <PeriodoSelector
+          ano={ano}
+          mes={mes}
+          tipo={tipo}
+          meio={meio}
+          contexto={contexto}
+          onAnoChange={setAno}
+          onMesChange={setMes}
+          onTipoChange={setTipo}
+          onMeioChange={setMeio}
+          onContextoChange={setContexto}
+        />
       </div>
-
-      {/* Resumo Cards Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Resumo Anual */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-lg font-bold mb-4 text-gray-900 flex items-center gap-2">
-            <div className="w-1 h-6 bg-blue-600 rounded"></div>
-            Movimento Anual ({ano})
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <ResumoCard titulo="Entradas" valor={esconderReceita(resumoAnual.totalEntradas.toFixed(2))} />
-            <ResumoCard titulo="Saídas" valor={esconderReceita((resumoAnual.totalSaidas.toFixed(2) - resumoAnual.totalCredito.toFixed(2)).toString())} />
-            <ResumoCard titulo="Saldo" valor={esconderReceita((resumoAnual.totalEntradas.toFixed(2) - (resumoAnual.totalSaidas.toFixed(2) - resumoAnual.totalCredito.toFixed(2))).toFixed(2).toString())} />
-            <ResumoCard titulo="Crédito" valor={esconderReceita(resumoAnual.totalCredito.toFixed(2))} />
-          </div>
-        </div>
-
-        {/* Resumo Mensal */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-lg font-bold mb-4 text-gray-900 flex items-center gap-2">
-            <div className="w-1 h-6 bg-green-600 rounded"></div>
-            Movimento Mensal ({mes}/{ano})
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <ResumoCard titulo="Entradas" valor={esconderReceita(resumo.totalEntradas.toFixed(2))} />
-            <ResumoCard titulo="Saídas" valor={esconderReceita((resumo.totalSaidas.toFixed(2) - resumo.totalCredito.toFixed(2)).toFixed(2).toString())} />
-            <ResumoCard titulo="Saldo" valor={esconderReceita((resumo.totalEntradas.toFixed(2) - (resumo.totalSaidas.toFixed(2) - resumo.totalCredito.toFixed(2))).toFixed(2).toString())} />
-            <ResumoCard titulo="Crédito" valor={esconderReceita(resumo.totalCredito.toFixed(2))} />
-          </div>
-        </div>
-      </div>
-
-        {/* Por Contexto */}
-        <div className="bg-white rounded-lg shadow-lg p-6 w-full gap-8 mb-8">
-          <h3 className="text-lg font-bold mb-4 text-gray-900 flex items-center gap-2">
-            <div className="w-1 h-6 bg-purple-600 rounded"></div>
-            Por Contexto
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <ResumoCard titulo="Entradas Loja" valor={esconderReceita(resumo.totalEntradasLoja.toFixed(2))} />
-            <ResumoCard titulo="Saídas Loja" valor={esconderReceita(resumo.totalSaidasLoja.toFixed(2))} />
-            <ResumoCard titulo="Total Loja" valor={esconderReceita(resumo.totalLoja.toFixed(2))} />
-            <ResumoCard titulo="Entradas Pessoal" valor={esconderReceita(resumo.totalEntradasPessoal.toFixed(2))} />
-            <ResumoCard titulo="Saídas Pessoal" valor={esconderReceita(resumo.totalSaidasPessoal.toFixed(2))} />
-            <ResumoCard titulo="Total Pessoal" valor={esconderReceita(resumo.totalPessoal.toFixed(2))} />
-          </div>
-        </div>
 
       {/* Tabela de Movimentações */}
-      <div className="bg-white rounded-lg shadow-lg p-6 overflow-x-auto">
-        <MovimentacoesTabela
-          dados={movs}
-          onEditar={abrirEdicao}
-          onExcluir={excluirMovimentacao}
-          esconderReceita={esconderReceita}
-        />
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-gray-100">
+          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+            <BarChart3 size={18} className="text-blue-600" />
+            Movimentações
+          </h3>
+        </div>
+        <div className="overflow-x-auto">
+          <MovimentacoesTabela
+            dados={movs}
+            onEditar={abrirEdicao}
+            onExcluir={excluirMovimentacao}
+            esconderReceita={esconderReceita}
+            deletandoId={deletando}
+          />
+        </div>
       </div>
 
       <NovaMovimentacaoModal
@@ -312,8 +284,7 @@ export default function Financeiro() {
         movimentacao={movimentacaoEditando}
         onClose={() => { setModalOpen(false); setMovimentacaoEditando(null); }}
         onSaved={() => {listarMovimentacoes(ano, mes).then(setMovs)}}
-        />
-
+      />
     </div>
   );
 }
