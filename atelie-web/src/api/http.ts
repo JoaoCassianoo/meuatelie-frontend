@@ -2,7 +2,7 @@ import axios from 'axios';
 import { supabase } from './supabase';
 
 export const api = axios.create({
-  baseURL: 'http://localhost:5277/api',
+  baseURL: 'https://meuatelie-api.onrender.com/api',
 });
 
 api.interceptors.request.use(async (config) => {
