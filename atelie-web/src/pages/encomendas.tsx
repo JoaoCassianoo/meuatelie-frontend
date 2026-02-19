@@ -44,7 +44,7 @@ export default function Encomendas() {
   }, []);
 
   async function criarNovaEncomenda() {
-    if (!formData.descricao || !formData.materialId || !formData.valorOrcado || !formData.cliente) {
+    if (!formData.descricao || !formData.valorOrcado || !formData.cliente) {
       alert('Preencha todos os campos obrigatórios');
       return;
     }
@@ -62,9 +62,15 @@ export default function Encomendas() {
       setModalOpen(false);
       adicionarEncomenda(encomenda);
       alert('Encomenda criada com sucesso!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao criar encomenda:', error);
-      alert('Erro ao criar encomenda');
+
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro ao criar encomenda';
+
+      alert(mensagem);
     }
   }
 
@@ -91,7 +97,7 @@ export default function Encomendas() {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col justify-between mb-3">
         <PageHeader title="Encomendas" />
         <button
           onClick={() => setModalOpen(true)}
@@ -198,60 +204,121 @@ export default function Encomendas() {
           <p className="text-gray-600">Nenhuma encomenda registrada</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b-2 border-gray-300 bg-gray-50">
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Cliente</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Descrição</th>
-                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">Valor Orçado</th>
-                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Status</th>
-                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
+        <><div className="hidden md:block">
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b-2 border-gray-300 bg-gray-50">
+                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Cliente</th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Descrição</th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Observações</th>
+                        <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">Valor Orçado</th>
+                        <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Status</th>
+                        <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {encomendas.map((enc) => {
+                        const statusInfo = statusColors[enc.status || 1];
+                        return (
+                          <tr key={enc.id} className="border-b border-gray-200 hover:bg-gray-50">
+                            <td className="px-6 py-4 font-medium text-gray-900">{enc.cliente}</td>
+                            <td className="px-6 py-4 text-gray-700">{enc.descricao}</td>
+                            <td className="px-6 py-4 text-gray-700">{enc.observacao}</td>
+                            <td className="px-6 py-4 text-right font-bold text-gray-900">
+                              R$ {enc.valorOrcado.toFixed(2).replace('.', ',')}
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusInfo.bg} ${statusInfo.text}`}>
+                                {statusInfo.label}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex gap-2 justify-end">
+                                <select
+                                  value={enc.status || 1}
+                                  onChange={(e) => mudarStatus(enc.id!, Number(e.target.value) as StatusEncomenda)}
+                                  className="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100"
+                                >
+                                  <option value={1}>Pendente</option>
+                                  <option value={2}>Em Produção</option>
+                                  <option value={3}>Finalizada</option>
+                                  <option value={4}>Cancelada</option>
+                                </select>
+                                <button
+                                  onClick={() => deletar(enc.id!)}
+                                  className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div><div className="md:hidden space-y-4">
                 {encomendas.map((enc) => {
                   const statusInfo = statusColors[enc.status || 1];
+
                   return (
-                    <tr key={enc.id} className="border-b border-gray-200 hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium text-gray-900">{enc.cliente}</td>
-                      <td className="px-6 py-4 text-gray-700">{enc.descricao}</td>
-                      <td className="px-6 py-4 text-right font-bold text-gray-900">
-                        R$ {enc.valorOrcado.toFixed(2).replace('.', ',')}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusInfo.bg} ${statusInfo.text}`}>
+                    <div
+                      key={enc.id}
+                      className="bg-white p-4 rounded-xl shadow-sm border border-gray-200"
+                    >
+                      <div className="flex justify-between items-start ">
+                        <div className='flex flex-col items-start'>
+                          <p className="text-sm text-gray-500">Cliente</p>
+                          <p className="font-semibold text-gray-900">{enc.cliente}</p>
+                        </div>
+                        <p className="font-bold text-base text-gray-900">
+                          R$ {enc.valorOrcado.toFixed(2).replace('.', ',')}
+                        </p>
+                      </div>
+
+                      <p className="text-sm text-gray-500">Descrição</p>
+                      <p className="text-gray-700 font-bold text-sm">
+                        {enc.descricao}
+                      </p>
+
+                      <p className="text-sm text-gray-500">Observação</p>
+                      <p className="text-gray-700 font-bold text-sm">
+                        {enc.observacao ? enc.observacao : 'Sem observações'}
+                      </p>
+
+                      <div className="mt-4 space-y-2 flex flex-col">
+                        <span
+                          className={`w-[100%] px-3 py-1 rounded-lg text-base font-semibold ${statusInfo.bg} ${statusInfo.text}`}
+                        >
                           {statusInfo.label}
                         </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2 justify-end">
-                          <select
-                            value={enc.status || 1}
-                            onChange={(e) => mudarStatus(enc.id!, Number(e.target.value) as StatusEncomenda)}
-                            className="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100"
-                          >
-                            <option value={1}>Pendente</option>
-                            <option value={2}>Em Produção</option>
-                            <option value={3}>Finalizada</option>
-                            <option value={4}>Cancelada</option>
-                          </select>
-                          <button
-                            onClick={() => deletar(enc.id!)}
-                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                        <select
+                          value={enc.status || 1}
+                          onChange={(e) => mudarStatus(enc.id!, Number(e.target.value) as StatusEncomenda)}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                        >
+                          <option value={1}>Pendente</option>
+                          <option value={2}>Em Produção</option>
+                          <option value={3}>Finalizada</option>
+                          <option value={4}>Cancelada</option>
+                        </select>
+
+                        <button
+                          onClick={() => deletar(enc.id!)}
+                          className="w-full flex items-center justify-center gap-2 p-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50"
+                        >
+                          <Trash2 size={18} />
+                          Excluir
+                        </button>
+                      </div>
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+              </div></>
       )}
     </div>
   );

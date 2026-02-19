@@ -13,13 +13,15 @@ export default function Estoque() {
   const [movimentacoes, setMovimentacoes] = useState<MovimentacaoEstoque[]>([]);
   const [materiais, setMateriais] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
-  const [materialFilter, setMaterialFilter] = useState<number | undefined>(undefined);
+  const [movFilter, setMovFilter] = useState<number | undefined>(undefined);
   const [materialModalOpen, setMaterialModalOpen] = useState(false);
   const [materialEditando, setMaterialEditando] = useState<Material | null>(null);
   const [movimentacaoModalOpen, setMovimentacaoModalOpen] = useState(false);
   const [tipoMovimentacao, setTipoMovimentacao] = useState<TipoMovimentacao>(TipoMovimentacao.Entrada);
   const [resumo, setResumo] = useState<{ quantidadeTotalPecas: number; valorTotalEstoque: number } | null>(null);
   const [mostrarValores, setMostrarValores] = useState(false);
+  const [materialFilter, setMaterialFilter] = useState('');
+
 
   function esconderReceita(valor: string) {
     return mostrarValores ? valor : "***,**";
@@ -66,13 +68,34 @@ export default function Estoque() {
 
   useEffect(() => {
     let movimentacaoFiltradas = cache.movimentacoes;
-    if (materialFilter) {
-      movimentacaoFiltradas = movimentacaoFiltradas.filter(m => m.materialId === materialFilter);
+    let materiaisFiltrados = cache.material.materiais;
+    console.log(movFilter)
+    if (movFilter !== undefined) {
+      movimentacaoFiltradas = movimentacaoFiltradas.filter(m => m.materialId === movFilter);
+      setMovimentacoes(movimentacaoFiltradas);
     }
-    setMovimentacoes(movimentacaoFiltradas);
-  }, [materialFilter]);
+    else if(movFilter === undefined){
+      setMovimentacoes(cache.movimentacoes);
+    }
+    if(materialFilter.trim() !== '')
+    {
+      const termo = materialFilter.toLowerCase();
+
+      materiaisFiltrados = materiaisFiltrados.filter(m =>
+        m.nome.toLowerCase().includes(termo) ||
+        String(m.tamanho).toLowerCase().includes(termo)
+      );
+
+      setMateriais(materiaisFiltrados);
+    }
+  }, [materialFilter, movFilter]);
 
 
+  useEffect(()=>{
+    setMaterialFilter('');
+    setMovimentacoes(cache.movimentacoes);
+    setMateriais(cache.material.materiais);
+  },[tab])
 
   function abrirModalNovo() {
     setMaterialEditando(null);
@@ -123,9 +146,15 @@ export default function Estoque() {
       setMaterialModalOpen(false);
       setMateriais([...cache.material.materiais]);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao salvar material:', error);
-      alert('Erro ao salvar material');
+
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro ao salvar material';
+
+      alert(mensagem);
     }
   }
 
@@ -157,10 +186,17 @@ export default function Estoque() {
       setMovimentacoes([...cache.movimentacoes]);
       setResumo({ quantidadeTotalPecas: cache.material.quantidade, valorTotalEstoque: cache.material.valor });
       alert(`${tipoMovimentacao === TipoMovimentacao.Entrada ? 'Entrada' : 'Saída'} registrada com sucesso!`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao registrar movimentação:', error);
-      alert('Erro ao registrar movimentação');
+
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro ao registrar movimentação';
+
+      alert(mensagem);
     }
+
   }
 
   async function deletarMaterialFunc(id: number) {
@@ -170,8 +206,15 @@ export default function Estoque() {
       await carregarMateriais();
       setMateriais([...cache.material.materiais]);
       setResumo({ quantidadeTotalPecas: cache.material.quantidade, valorTotalEstoque: cache.material.valor });
-    } catch (error) {
-      console.error('Erro ao deletar:', error);
+    } catch (error: any) {
+      console.error('Erro ao deletar material:', error);
+
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro ao deletar material';
+
+      alert(mensagem);
     }
   }
 
@@ -181,7 +224,7 @@ export default function Estoque() {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="flex flex-col justify-between mb-6">
+      <div className="flex-1 flex-col justify-between mb-3">
         <div className="flex items-center text-center justify-between">
           <PageHeader title="Estoque" />
           <button
@@ -200,10 +243,10 @@ export default function Estoque() {
             {mostrarValores ? 'Ocultar valores' : 'Mostrar valores'}
           </button>
         </div>
-        <div className="flex gap-2">
+        <div className="flex justify-between gap-2 ">
           <button
             onClick={() => setTab('materiais')}
-            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+            className={`w-[100%] px-4 py-2 rounded-lg font-semibold transition-colors ${
               tab === 'materiais'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -213,7 +256,7 @@ export default function Estoque() {
           </button>
           <button
             onClick={() => setTab('movimentacoes')}
-            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+            className={`w-[100%] px-4 py-2 rounded-lg font-semibold transition-colors ${
               tab === 'movimentacoes'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -225,17 +268,17 @@ export default function Estoque() {
       </div>
 
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-2 mb-3">
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 md:p-6 border border-green-200">
           <p className="text-gray-600 text-sm">Valor Total Estoque</p>
-          <p className="text-2xl font-bold text-green-600">
+          <p className="text-xl md:text-2xl font-bold text-green-600">
             R$ {esconderReceita(Math.abs(resumo?.valorTotalEstoque || 0).toFixed(2).replace('.', ','))}
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-6 border border-red-200">
+        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-3 md:p-6 border border-red-200">
           <p className="text-gray-600 text-sm">Quantidade de Peças</p>
-          <p className="text-2xl font-bold text-red-600">
+          <p className="text-xl md:text-2xl font-bold text-red-600">
             {(resumo?.quantidadeTotalPecas || 0)}
           </p>
         </div>
@@ -438,11 +481,22 @@ export default function Estoque() {
             <>
               <button
                 onClick={abrirModalNovo}
-                className="mb-6 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                className="w-[100%] mb-6 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
               >
                 <Plus size={20} />
                 Novo Material
               </button>
+
+              <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Filtrar por Material</label>
+                <input
+                  type="text"
+                  placeholder="Buscar por nome ou tamanho..."
+                  value={materialFilter || ''}
+                  onChange={(e) => setMaterialFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 {materiais.map(mat => (
@@ -494,62 +548,157 @@ export default function Estoque() {
             <>
               <button
                 onClick={() => setMovimentacaoModalOpen(true)}
-                className="mb-6 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                className="w-full mb-6 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
               >
                 <Plus size={20} />
                 Registrar Movimentação
               </button>
 
               <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Filtrar por Material</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Filtrar por Material
+                </label>
                 <select
-                  value={materialFilter || ''}
-                  onChange={(e) => setMaterialFilter(e.target.value ? Number(e.target.value) : undefined)}
+                  value={movFilter || ''}
+                  onChange={(e) =>
+                    setMovFilter(
+                      e.target.value ? Number(e.target.value) : undefined
+                    )
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 >
                   <option value="">Todos</option>
-                  {materiais.map(m => (
-                    <option key={m.id} value={m.id}>{m.id} - {m.nome}</option>
+                  {materiais.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.id} - {m.nome}
+                    </option>
                   ))}
                 </select>
               </div>
 
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              {/* MOBILE */}
+              <div className="md:hidden space-y-4">
+                {movimentacoes.length === 0 ? (
+                  <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+                    Nenhuma movimentação registrada
+                  </div>
+                ) : (
+                  movimentacoes.map((mov, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-white p-4 rounded-xl shadow-sm border border-gray-200"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-xs text-gray-500">
+                            {new Date(mov.data || '').toLocaleDateString('pt-BR')}
+                          </p>
+                          <p className="font-semibold text-gray-900">
+                            {mov.materialId} - {getMaterialNome(mov.materialId)}
+                          </p>
+                        </div>
+
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${
+                            mov.tipo === TipoMovimentacao.Entrada
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-red-100 text-red-700'
+                          }`}
+                        >
+                          {mov.tipo === TipoMovimentacao.Entrada ? (
+                            <Plus size={14} />
+                          ) : (
+                            <TrendingDown size={14} />
+                          )}
+                          {mov.tipo === TipoMovimentacao.Entrada
+                            ? 'Entrada'
+                            : 'Saída'}
+                        </span>
+                      </div>
+
+                      <p className="text-lg font-bold text-gray-900">
+                        Quantidade: {mov.quantidade}
+                      </p>
+
+                      {mov.observacao && (
+                        <p className="text-sm text-gray-600">
+                          {mov.observacao}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* DESKTOP */}
+              <div className="hidden md:block bg-white rounded-lg shadow-lg overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b-2 border-gray-300 bg-gray-50">
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Data</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Material</th>
-                        <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Tipo</th>
-                        <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">Quantidade</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Observação</th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                          Data
+                        </th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                          Material
+                        </th>
+                        <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">
+                          Tipo
+                        </th>
+                        <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">
+                          Quantidade
+                        </th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                          Observação
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {movimentacoes.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                          <td
+                            colSpan={5}
+                            className="px-6 py-8 text-center text-gray-500"
+                          >
                             Nenhuma movimentação registrada
                           </td>
                         </tr>
                       ) : (
                         movimentacoes.map((mov, idx) => (
-                          <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
+                          <tr
+                            key={idx}
+                            className="border-b border-gray-200 hover:bg-gray-50"
+                          >
                             <td className="px-6 py-4 text-sm text-gray-700">
                               {new Date(mov.data || '').toLocaleDateString('pt-BR')}
                             </td>
-                            <td className="px-6 py-4 font-medium text-gray-900">{getMaterialNome(mov.materialId)}</td>
+                            <td className="px-6 py-4 font-medium text-gray-900">
+                              {getMaterialNome(mov.materialId)}
+                            </td>
                             <td className="px-6 py-4 text-center">
-                              <span className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center justify-center gap-1 w-fit mx-auto ${
-                                mov.tipo === TipoMovimentacao.Entrada ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                              }`}>
-                                {mov.tipo === TipoMovimentacao.Entrada ? <Plus size={14} /> : <TrendingDown size={14} />}
-                                {mov.tipo === TipoMovimentacao.Entrada ? 'Entrada' : 'Saída'}
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center justify-center gap-1 w-fit mx-auto ${
+                                  mov.tipo === TipoMovimentacao.Entrada
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-red-100 text-red-700'
+                                }`}
+                              >
+                                {mov.tipo === TipoMovimentacao.Entrada ? (
+                                  <Plus size={14} />
+                                ) : (
+                                  <TrendingDown size={14} />
+                                )}
+                                {mov.tipo === TipoMovimentacao.Entrada
+                                  ? 'Entrada'
+                                  : 'Saída'}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-right font-bold text-gray-900">{mov.quantidade}</td>
-                            <td className="px-6 py-4 text-sm text-gray-600">{mov.observacao || '-'}</td>
+                            <td className="px-6 py-4 text-right font-bold text-gray-900">
+                              {mov.quantidade}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600">
+                              {mov.observacao || '-'}
+                            </td>
                           </tr>
                         ))
                       )}

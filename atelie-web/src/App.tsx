@@ -50,7 +50,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex">
+    <div className="flex flex-col lg:flex-row">
       <Sidebar activePage={currentPage} onNavigate={setCurrentPage} />
       <main className="flex-1 bg-gray-50 min-h-screen">
         {renderPage()}

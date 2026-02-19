@@ -16,7 +16,7 @@ export function PeriodoSelector({ ano, mes, tipo, meio, contexto, onAnoChange, o
   const labelClasses = "block text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide";
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
       <div>
         <label className={labelClasses}>Ano</label>
         <input

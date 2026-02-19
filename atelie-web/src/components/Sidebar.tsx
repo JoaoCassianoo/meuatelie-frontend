@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Menu, X, BarChart3, Package, CheckSquare, ShoppingCart, Truck, Sparkles, HouseIcon, User } from 'lucide-react';
+import { cache } from '../api/cache.api';
+import { PageHeader } from './PageHeader';
 
 type Props = {
   activePage: string;
@@ -27,17 +29,15 @@ export function Sidebar({ activePage, onNavigate }: Props) {
 
   return (
     <>
-      {/* Mobile toggle button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-4 z-50 lg:hidden"
-      >
-        {isOpen ? (
-          <X size={24} className="text-gray-700" />
-        ) : (
-          <Menu size={24} className="text-gray-700" />
-        )}
-      </button>
+      <div className={`${isOpen ? 'z-0 bg-gradient-to-r from-gray-900 to-gray-800' : 'sticky bg-gradient-to-r from-gray-900 to-gray-800' } top-0 z-50 flex items-center`}>
+        {/* Mobile toggle button */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="left-1 top-1 z-50 bg-grey p-4 lg:hidden"
+        >
+          <Menu size={24} className="text-white" />
+        </button>
+      </div>
 
       {/* Sidebar backdrop for mobile */}
       {isOpen && (
@@ -49,18 +49,26 @@ export function Sidebar({ activePage, onNavigate }: Props) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white shadow-lg transform transition-transform duration-300 z-40 lg:translate-x-0 ${
+        className={`lg:sticky fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white shadow-lg transform transition-transform duration-300 z-50 md:z-40 lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Logo/Brand */}
-        <div className="p-6 border-b border-gray-700">
-          <h1 className="text-2xl font-bold">Ateliê</h1>
-          <p className="text-gray-400 text-sm">Gestão Completa</p>
+        <div className='p-6 border-b border-gray-700'>
+          <div className="flex text-center items-center justify-between">
+            <h1 className="text-2xl font-bold">Meu Ateliê</h1>
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className='lg:hidden'
+            >
+              <X size={24} className="text-white" />
+            </button>
+          </div>
+            <p className="text-gray-400 text-sm">Gestão Completa</p>
         </div>
 
         {/* Menu Items */}
-        <nav className="mt-8">
+        <nav className="mt-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activePage === item.id;
@@ -86,9 +94,6 @@ export function Sidebar({ activePage, onNavigate }: Props) {
           <p className="text-xs text-gray-400 text-center">© 2026 Ateliê</p>
         </div>
       </aside>
-
-      {/* Main content spacing */}
-      <div className="lg:ml-64" />
     </>
   );
 }

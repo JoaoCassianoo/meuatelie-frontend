@@ -149,9 +149,13 @@ export default function PecasProntas() {
       setMateriais([...cache.material.materiais]);
       limparFormulario();
       setModalOpen(false);
-    } catch (error) {
-      console.error('Erro ao salvar peça:', error);
-      alert('Erro ao salvar peça');
+    }  catch (error: any) {
+      alert('Erro ao salvar peças:');
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro ao salvar peças';
+      console.error(mensagem);
     }
   }
 
@@ -164,9 +168,13 @@ export default function PecasProntas() {
       await carregarMateriais();
       setPecas([...cache.pecasProntas]);
       setMateriais([...cache.material.materiais]);
-    } catch (error) {
-      console.error('Erro ao deletar peça:', error);
-      alert('Erro ao deletar peça');
+    } catch (error: any) {
+      alert('Erro ao deletar peça:');
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro ao deletar peças';
+      console.error(mensagem);
     }
   }
 
@@ -187,9 +195,13 @@ export default function PecasProntas() {
       setPecas([...cache.pecasProntas]);
       setMateriais([...cache.material.materiais]);
       setMaterialForm({ materialId: '', quantidadeUsada: '' });
-    } catch (error) {
-      console.error('Erro ao adicionar material:', error);
-      alert('Erro ao adicionar material');
+    } catch (error: any) {
+      alert('Erro ao adicionar material:');
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro ao adicionar material';
+      console.error(mensagem);
     }
   }
 
@@ -253,46 +265,43 @@ export default function PecasProntas() {
 
       <div className="">
         {/* Controles de Filtro e Ações */}
-        <div className="flex flex-col gap-4 mb-6">
-          <div className="flex flex-wrap gap-4 items-center">
-            <div>
+        <div className="flex flex-col gap-3 mb-3 md:mb-6">
+          <div className="w-full flex flex-row justify-between gap-2 items-center">
+            <div className='w-full'>
               <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as 'todas' | 'nao-vendidas')}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="todas">Todas</option>
                 <option value="nao-vendidas">Não Vendidas</option>
               </select>
             </div>
 
-            <div>
+            <div className='w-full'>
               <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
               <select
                 value={filterTipo}
                 onChange={(e) => setFilterTipo(e.target.value as 'todas' | TipoPecaPronta)}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="todas">Todas</option>
                 <option value={TipoPecaPronta.Produzida}>Produzida</option>
                 <option value={TipoPecaPronta.Manutencao}>Manutenção</option>
               </select>
             </div>
-
-            <div className="flex-1"></div>
-
-            <button
-              onClick={() => {
-                limparFormulario();
-                setModalOpen(true);
-              }}
-              className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-            >
-              <Plus size={18} />
-              Nova Peça
-            </button>
           </div>
+          <button
+            onClick={() => {
+              limparFormulario();
+              setModalOpen(true);
+            }}
+            className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+          >
+            <Plus size={18} />
+            Nova Peça
+          </button>
         </div>
 
         {/* Lista de Peças */}
@@ -302,23 +311,28 @@ export default function PecasProntas() {
           ) : (
             pecasFiltradas.map((peca) => (
               <div key={peca.id} className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                <div className="flex flex-col md:flex-col md:items-start md:justify-between gap-4">
                   {/* Informações Principais */}
-                  <div className="flex-1">
+                  <div className="flex-1 w-full">
                     <div className="flex items-start gap-3 mb-2">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900">{peca.titulo}</h3>
+                        <div className='flex flex-row items-center justify-between'>
+                          <h3 className="text-lg font-semibold text-gray-900">{peca.titulo}</h3>
+                          <div className='text-gray-700'>
+                            {new Date(peca.dataCriacao).toLocaleDateString('pt-BR')}
+                          </div>
+                        </div>
                         {peca.descricao && <p className="text-sm text-gray-600 mt-1">{peca.descricao}</p>}
                       </div>
                     </div>
 
-                    <img src={peca.fotoUrl} alt="" className="h-64 w-full object-full rounded-md"/>
+                    <img src={peca.fotoUrl} alt="" className="h-64 w-full object-cover rounded-md"/>
                   </div>
 
                   
 
                   {/* Ações */}
-                  <div className="flex flex-wrap gap-2 md:flex-col md:w-auto">
+                  <div className="grid grid-cols-2 gap-2 md:w-full">
                     
                     {peca.tipo === TipoPecaPronta.Produzida && (
                       <button
@@ -384,10 +398,6 @@ export default function PecasProntas() {
                     ) : (
                       <span className="text-orange-600">Não Vendida</span>
                     )}
-                  </div>
-                  <div>
-                    <span className="font-medium">Criada:</span>{' '}
-                    {new Date(peca.dataCriacao).toLocaleDateString('pt-BR')}
                   </div>
                 </div>
               </div>

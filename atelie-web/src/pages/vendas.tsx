@@ -122,7 +122,7 @@ export default function Vendas() {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="flex flex-col justify-between mb-6">
+      <div className="flex flex-col justify-between ">
         <div className="flex items-center text-center justify-between">
           <PageHeader title="Vendas" />
           <button
@@ -141,13 +141,6 @@ export default function Vendas() {
             {mostrarValores ? 'Ocultar valores' : 'Mostrar valores'}
           </button>
         </div>
-        <button
-          onClick={abrirModalNova}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex gap-2 transition-colors"
-        >
-          <Plus size={20} />
-          Nova Venda
-        </button>
       </div>
 
       {/* Modal */}
@@ -235,43 +228,134 @@ export default function Vendas() {
         <p className="text-gray-500">Carregando...</p>
       ) : (
         <>
-          <div className="mb-6 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow-lg p-6 text-white">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm font-semibold opacity-90">Total de Vendas</p>
-                <p className="text-4xl font-bold flex items-center gap-2 mt-2">
-                  <TrendingUp size={32} />
-                  R$ {esconderReceita(totalVendas.toFixed(2).replace('.', ','))}
-                </p>
-              </div>
-            </div>
+          {/* CARD TOTAL */}
+          <div className="mb-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white">
+            <p className="text-sm font-semibold opacity-90">
+              Total de Vendas
+            </p>
+            <p className="text-3xl md:text-4xl font-bold flex items-center gap-2 mt-1">
+              <TrendingUp size={28} />
+              R$ {esconderReceita(totalVendas.toFixed(2).replace('.', ','))}
+            </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          {/* BOTÃO */}
+          <button
+            onClick={abrirModalNova}
+            className="w-full mb-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+          >
+            <Plus size={20} />
+            Nova Venda
+          </button>
+
+          {/* MOBILE */}
+          <div className="md:hidden space-y-4">
+            {vendas.length === 0 ? (
+              <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+                Nenhuma venda registrada
+              </div>
+            ) : (
+              vendas.map((venda) => (
+                <div
+                  key={venda.id}
+                  className="bg-white p-4 rounded-xl shadow-sm border border-gray-200"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-xs text-gray-500">Cliente</p>
+                      <p className="font-semibold text-gray-900">
+                        {venda.cliente}
+                      </p>
+                    </div>
+
+                    <p className="font-bold text-green-600 text-lg">
+                      R$ {esconderReceita((venda.valorVenda).toFixed(2).replace('.', ','))}
+                    </p>
+                  </div>
+
+                  <div className="mt-1 text-sm text-gray-700">
+                    <p>
+                      <span className="font-semibold">Peça:</span>{' '}
+                      {getPecaProntaNome(venda.pecaProntaId)}
+                    </p>
+                    {venda.observacao && (
+                      <p className="mt-1 text-gray-600">
+                        <span className="font-semibold">Obs:</span>{' '}
+                        {venda.observacao}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 mt-4">
+                    <button
+                      onClick={() => abrirModalEdicao(venda)}
+                      className="flex-1 flex items-center justify-center gap-2 p-2 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50"
+                    >
+                      <Edit2 size={18} />
+                      Editar
+                    </button>
+
+                    <button
+                      onClick={() => deletarVendaFunc(venda.id!)}
+                      className="flex-1 flex items-center justify-center gap-2 p-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50"
+                    >
+                      <Trash2 size={18} />
+                      Excluir
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* DESKTOP */}
+          <div className="hidden md:block bg-white rounded-lg shadow-lg overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b-2 border-gray-300 bg-gray-50">
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Cliente</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Peça</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Observação</th>
-                    <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">Valor</th>
-                    <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Ações</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                      Cliente
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                      Peça
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                      Observação
+                    </th>
+                    <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">
+                      Valor
+                    </th>
+                    <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">
+                      Ações
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {vendas.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                      <td
+                        colSpan={5}
+                        className="px-6 py-8 text-center text-gray-500"
+                      >
                         Nenhuma venda registrada
                       </td>
                     </tr>
                   ) : (
-                    vendas.map(venda => (
-                      <tr key={venda.id} className="border-b border-gray-200 hover:bg-gray-50">
-                        <td className="px-6 py-4 font-medium text-gray-900">{venda.cliente}</td>
-                        <td className="px-6 py-4 text-gray-700">{getPecaProntaNome(venda.pecaProntaId)}</td>
-                        <td className="px-6 py-4 text-gray-700">{venda.observacao}</td>
+                    vendas.map((venda) => (
+                      <tr
+                        key={venda.id}
+                        className="border-b border-gray-200 hover:bg-gray-50"
+                      >
+                        <td className="px-6 py-4 font-medium text-gray-900">
+                          {venda.cliente}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">
+                          {getPecaProntaNome(venda.pecaProntaId)}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">
+                          {venda.observacao}
+                        </td>
                         <td className="px-6 py-4 text-right font-bold text-green-600">
                           R$ {esconderReceita((venda.valorVenda).toFixed(2).replace('.', ','))}
                         </td>

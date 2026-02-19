@@ -1,7 +1,7 @@
 import {  useEffect, useState } from 'react';
 import { ResumoCard } from '../components/financeiro/ResumoMensal';
 import { PageHeader } from '../components/PageHeader';
-import { BarChart3, Package, CheckSquare, ShoppingCart, Truck, TrendingUp, TrendingDown, Eye, EyeOff } from 'lucide-react';
+import { BarChart3, Package, CheckSquare, ShoppingCart, Truck, TrendingUp, TrendingDown, Eye, EyeOff, User } from 'lucide-react';
 import { cache, carregarCacheDoLocalStorage, carregarResumo, verReceita } from '../api/cache.api';
 
 export default function Inicial({setActivePage}: {setActivePage?: (page: string) => void}) {
@@ -46,12 +46,13 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
         { id: 'todo', label: 'To-do List', icon: CheckSquare, color: 'bg-purple-500', desc: 'Tarefas e lembretes' },
         { id: 'vendas', label: 'Vendas', icon: ShoppingCart, color: 'bg-orange-500', desc: 'Registro de vendas' },
         { id: 'encomendas', label: 'Encomendas', icon: Truck, color: 'bg-red-500', desc: 'Encomendas e pedidos' },
+        { id: 'perfil', label: 'Perfil', icon: User, color: 'bg-blue-500', desc: 'Dados do Atelie' },
     ];
 
     return (
         <div className='p-6 lg:p-8'>
             <div className="flex items-center text-center justify-between">
-                <PageHeader title="Visão Geral" />
+                <PageHeader title="Inicial" />
                 <button
                 onClick={() => mostrarValor()}
                 className={`
@@ -70,42 +71,42 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-6 border border-purple-200">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3 md:p-6 border border-purple-200">
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-gray-600 text-sm">Saldo Anual</p>
-                            <p className={`text-2xl font-bold ${saldoAnual >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            <p className={`text-xl md:text-2xl  font-bold ${saldoAnual >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                 R$ {esconderReceita(saldoAnual.toFixed(2).replace('.', ','))}
                             </p>
                         </div>
                         {saldoAnual >= 0 ? (
-                            <TrendingUp size={32} className="text-green-500" />
+                            <TrendingUp size={32} className="text-green-500 w-12px md:w-32px" />
                         ) : (
-                            <TrendingDown size={32} className="text-red-500" />
+                            <TrendingDown size={32} className="text-red-500 w-12px md:w-32px" />
                         )}
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 md:p-6 border border-green-200">
                     <p className="text-gray-600 text-sm">Entradas (mês)</p>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-xl md:text-2xl font-bold text-green-600">
                         R$ {esconderReceita((resumoMensal?.totalEntradas || 0).toFixed(2).replace('.', ','))}
                     </p>
                 </div>
 
-                <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-6 border border-red-200">
+                <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-3 md:p-6 border border-red-200">
                     <p className="text-gray-600 text-sm">Saídas (mês)</p>
-                    <p className="text-2xl font-bold text-red-600">
+                    <p className="text-xl md:text-2xl font-bold text-red-600">
                         R$ {esconderReceita((resumoMensal?.totalSaidas || 0).toFixed(2).replace('.', ','))}
                     </p>
                 </div>
 
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 md:p-6 border border-blue-200">
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-gray-600 text-sm">Saldo Mensal</p>
-                            <p className={`text-2xl font-bold ${saldoMensal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            <p className={`text-xl md:text-2xl font-bold ${saldoMensal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                 R$ {esconderReceita(saldoMensal.toFixed(2).replace('.', ','))}
                             </p>
                         </div>
@@ -121,7 +122,7 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
             {/* Modules Overview */}
             <div className="mb-8">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Módulos Disponíveis</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {modules.map((module) => {
                         const Icon = module.icon;
                         return (
@@ -142,9 +143,8 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
                 </div>
             </div>
 
-            {/* Financial Overview */}
+            {/* Financial Overview
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
-                {/* Annual Summary */}
                 <div className='bg-white rounded-lg shadow-lg p-6'>
                     <div className='flex items-center gap-2 mb-4'>
                         <BarChart3 size={24} className="text-blue-600" />
@@ -161,7 +161,6 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
                     </div>
                 </div>
 
-                {/* Monthly Summary */}
                 <div className='bg-white rounded-lg shadow-lg p-6'>
                     <div className='flex items-center gap-2 mb-4'>
                         <BarChart3 size={24} className="text-green-600" />
@@ -178,6 +177,7 @@ export default function Inicial({setActivePage}: {setActivePage?: (page: string)
                     </div>
                 </div>
             </div>
+             */}
         </div>
     );
 }

@@ -30,8 +30,13 @@ export default function TodoList() {
       setNovaListaTitulo('');
       await carregarListas();
       setListas(cache.listas);
-    } catch (error) {
-      console.error('Erro ao criar lista:', error);
+    } catch (error: any) {
+      alert('Erro ao criar lista:');
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro ao criar lista';
+      console.error(mensagem);
     }
   }
 
@@ -43,8 +48,13 @@ export default function TodoList() {
       setNovasTarefas({ ...novasTarefas, [listaId]: '' });
       await carregarListas();
       setListas(cache.listas);
-    } catch (error) {
-      console.error('Erro ao adicionar tarefa:', error);
+    } catch (error: any) {
+      alert('Erro ao adicionar tarefa');
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro ao adicionar tarefa';
+      console.error(mensagem);
     }
   }
 
@@ -57,8 +67,13 @@ export default function TodoList() {
       }
       await carregarListas();
       setListas(cache.listas);
-    } catch (error) {
-      console.error('Erro ao atualizar tarefa:', error);
+    } catch (error: any) {
+      alert('Erro ao atualizar tarefa');
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro ao atualizar tarefa';
+      console.error(mensagem);
     }
   }
 
@@ -67,8 +82,13 @@ export default function TodoList() {
       await deletarTarefa(tarefaId);
       await carregarListas();
       setListas(cache.listas);
-    } catch (error) {
-      console.error('Erro ao deletar tarefa:', error);
+    } catch (error: any) {
+      alert('Erro ao deletar tarefa');
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro ao deletar tarefa';
+      console.error(mensagem);
     }
   }
 
@@ -78,8 +98,13 @@ export default function TodoList() {
       await deletarLista(listaId);
       await carregarListas();
       setListas(cache.listas);
-    } catch (error) {
-      console.error('Erro ao deletar lista:', error);
+    } catch (error: any) {
+      alert('Erro ao deletar lista');
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro ao deletar lista';
+      console.error(mensagem);
     }
   }
 
@@ -93,7 +118,7 @@ export default function TodoList() {
         <>
           <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
             <h3 className="text-lg font-bold mb-4">Nova Lista</h3>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2">
               <input
                 type="text"
                 value={novaListaTitulo}

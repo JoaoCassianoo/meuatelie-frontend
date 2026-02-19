@@ -42,9 +42,13 @@ export default function Financeiro() {
       alert('Movimentações importadas com sucesso!');
       listarMovimentacoes(ano, mes).then(setMovs);
       obterResumoMensal(ano, mes).then(setResumo);
-    } catch (error) {
+    } catch (error: any) {
       alert('Erro ao importar movimentações');
-      console.error(error);
+      const mensagem =
+        error?.response?.data?.erro ||
+        error?.response?.data?.message ||
+        'Erro ao importar movimentações';
+      console.error(mensagem);
     }
 
     // Reset input
@@ -148,49 +152,49 @@ export default function Financeiro() {
       </div>
       
       {/* Quick Stats - Top 4 Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-6 border border-purple-200">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3 md:p-6 border border-purple-200">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm">Saldo Anual</p>
-              <p className={`text-2xl font-bold ${saldoAnual >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`text-xl md:text-2xl font-bold ${saldoAnual >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 R$ {esconderReceita(Math.abs(saldoAnual).toFixed(2).replace('.', ','))}
               </p> 
             </div>
             {saldoAnual >= 0 ? (
-              <TrendingUp size={32} className="text-green-500" />
+              <TrendingUp size={32} className="text-green-500 w-12px md:w-32px" />
             ) : (
-              <TrendingDown size={32} className="text-red-500" />
+              <TrendingDown size={32} className="text-red-500 w-12px md:w-32px" />
             )}
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 md:p-6 border border-green-200">
           <p className="text-gray-600 text-sm">Entradas (mês)</p>
-          <p className="text-2xl font-bold text-green-600">
+          <p className="text-xl md:text-2xl font-bold text-green-600">
             R$ {esconderReceita((resumo?.totalEntradas || 0).toFixed(2).replace('.', ','))}
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-6 border border-red-200">
+        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-3 md:p-6 border border-red-200">
           <p className="text-gray-600 text-sm">Saídas (mês)</p>
-          <p className="text-2xl font-bold text-red-600">
+          <p className="text-xl md:text-2xl font-bold text-red-600">
             R$ {esconderReceita(Math.abs(resumo?.totalSaidas || 0).toFixed(2).replace('.', ','))}
           </p>
         </div>
 
-         <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
+         <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 md:p-6 border border-blue-200">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm">Saldo Mensal</p>
-              <p className={`text-2xl font-bold ${saldoMensal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`text-xl md:text-2xl font-bold ${saldoMensal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 R$ {esconderReceita(Math.abs(saldoMensal).toFixed(2).replace('.', ','))}
               </p>
             </div>
             {saldoMensal >= 0 ? (
-              <TrendingUp size={32} className="text-green-500" />
+              <TrendingUp size={32} className="text-green-500 w-12px md:w-32px" />
             ) : (
-              <TrendingDown size={32} className="text-red-500" />
+              <TrendingDown size={32} className="text-red-500 w-12px md:w-32px" />
             )}
           </div>
         </div>
@@ -198,12 +202,12 @@ export default function Financeiro() {
 
       {/* Header com Filtros e Botão */}
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col md:flex-row justify-between md:items-center mb-4">
+          <div className="flex items-center gap-2 pb-3 md:pb-0">
             <BarChart3 size={24} className="text-blue-600" />
             <h2 className="text-xl font-bold">Movimentações</h2>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col md:flex-row gap-2">
             <input
               type="file"
               id="csvInput"
@@ -213,14 +217,14 @@ export default function Financeiro() {
             />
             <button
               onClick={() => document.getElementById('csvInput')?.click()}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+              className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
             >
               <Upload size={20} />
               Importar CSV
             </button>
             <button
               onClick={() => { setMovimentacaoEditando(null); setModalOpen(true); }}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+              className="text-sm bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
             >
               <Plus size={20} />
               Nova Movimentação
@@ -281,7 +285,7 @@ export default function Financeiro() {
             <div className="w-1 h-6 bg-purple-600 rounded"></div>
             Por Contexto
           </h3>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <ResumoCard titulo="Entradas Loja" valor={esconderReceita(resumo.totalEntradasLoja.toFixed(2))} />
             <ResumoCard titulo="Saídas Loja" valor={esconderReceita(resumo.totalSaidasLoja.toFixed(2))} />
             <ResumoCard titulo="Total Loja" valor={esconderReceita(resumo.totalLoja.toFixed(2))} />
