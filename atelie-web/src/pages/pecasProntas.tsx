@@ -89,17 +89,6 @@ export default function PecasProntas() {
     setPecas(filtered);
   },[filterStatus, filterTipo]);
 
-  const converterParaBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.readAsDataURL(file);
-
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
-  };
-
   async function criarOuAtualizar() {
     if (!formData.titulo || !formData.valor) {
       addToast('Título e Valor são obrigatórios', 'error');
