@@ -100,18 +100,6 @@ export default function PecasProntas() {
     });
   };
 
-  const handleImagemSelecionada = async ( e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const base64 = await converterParaBase64(file);
-
-    setFormData(prev => ({
-      ...prev,
-      fotoUrl: base64,
-    }));
-  };
-
   async function criarOuAtualizar() {
     if (!formData.titulo || !formData.valor) {
       addToast('Título e Valor são obrigatórios', 'error');
