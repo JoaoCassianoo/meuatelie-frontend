@@ -24,7 +24,6 @@ export interface PecaPronta {
   titulo: string;
   descricao?: string;
   valor: number;
-  fotoUrl?: string;
   tipo: TipoPecaPronta;
   vendida: boolean;
   dataCriacao: string;

@@ -24,7 +24,6 @@ interface FormData {
   valor: string;
   descricao: string;
   tipo: TipoPecaPronta;
-  fotoUrl: string;
   vendida: boolean;
 }
 
@@ -52,7 +51,6 @@ export default function PecasProntas() {
     valor: '',
     descricao: '',
     tipo: TipoPecaPronta.Produzida,
-    fotoUrl: '',
     vendida: false,
   });
   const [materialForm, setMaterialForm] = useState<EditingMaterial>({
@@ -131,7 +129,6 @@ export default function PecasProntas() {
         valor: parseFloat(formData.valor),
         descricao: formData.descricao || undefined,
         tipo: tipoMap[formData.tipo],
-        fotoUrl: formData.fotoUrl || undefined,
         vendida: formData.vendida,
       };
 
@@ -140,7 +137,6 @@ export default function PecasProntas() {
           titulo: data.titulo,
           valor: data.valor,
           descricao: data.descricao,
-          fotoUrl: data.fotoUrl,
           tipo: data.tipo,
           vendida: data.vendida,
         });
@@ -236,7 +232,6 @@ export default function PecasProntas() {
       valor: '',
       descricao: '',
       tipo: TipoPecaPronta.Produzida,
-      fotoUrl: '',
       vendida: false,
     });
     setEditingId(null);
@@ -248,7 +243,6 @@ export default function PecasProntas() {
       valor: peca.valor.toString(),
       descricao: peca.descricao || '',
       tipo: peca.tipo,
-      fotoUrl: peca.fotoUrl || '',
       vendida: peca.vendida,
     });
     setEditingId(peca.id);
@@ -325,10 +319,6 @@ export default function PecasProntas() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
           {pecasFiltradas.map((peca) => (
             <div key={peca.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-              {/* Imagem */}
-              {peca.fotoUrl && (
-                <img src={peca.fotoUrl} alt={peca.titulo} className="w-full h-48 object-cover"/>
-              )}
               
               {/* Conteúdo */}
               <div className="p-4">
@@ -351,7 +341,7 @@ export default function PecasProntas() {
                 {/* Valor e Tipo */}
                 <div className="flex items-center justify-between mb-3 pb-3 border-t border-gray-100">
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide">Valor</p>
+                    <p className="mt-3 text-xs text-gray-500 uppercase tracking-wide">Valor</p>
                     <p className="text-lg font-bold text-blue-600">R$ {peca.valor.toFixed(2).replace('.', ',')}</p>
                   </div>
                   <span className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold ${
@@ -376,11 +366,8 @@ export default function PecasProntas() {
                       title="Gerenciar Materiais"
                     >
                       <Eye size={14} />
-                      <span className="hidden sm:inline">Materiais</span>
+                      <span className="inline">Materiais</span>
                     </button>
-                  )}
-                  {peca.tipo === TipoPecaPronta.Manutencao && (
-                    <div></div>
                   )}
                   <button
                     onClick={() => abrirEditar(peca)}
@@ -388,7 +375,7 @@ export default function PecasProntas() {
                       border border-blue-200 text-blue-700 hover:bg-blue-50 transition-colors"
                   >
                     <Edit2 size={14} />
-                    <span className="hidden sm:inline">Editar</span>
+                    <span className="inline">Editar</span>
                   </button>
                   <button
                     onClick={() => deletar(peca.id)}
@@ -400,7 +387,7 @@ export default function PecasProntas() {
                     ) : (
                       <Trash2 size={14} />
                     )}
-                    <span className="hidden sm:inline">{deletando === peca.id ? 'Deletando' : 'Deletar'}</span>
+                    <span className="inline">{deletando === peca.id ? 'Deletando' : 'Deletar'}</span>
                   </button>
                 </div>
               </div>
@@ -437,12 +424,6 @@ export default function PecasProntas() {
             <textarea value={formData.descricao} placeholder="Descrição da peça"
               onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
               className={`${inputCls} h-20 resize-none`}/>
-          </div>
-
-          <div><label className={labelCls}>Foto</label>
-            <input type="file" accept='image/*'
-              onChange={handleImagemSelecionada}
-              className={inputCls}/>
           </div>
 
           <div><label className={labelCls}>Vendida</label>
@@ -482,7 +463,7 @@ export default function PecasProntas() {
           {/* Adicionar Material */}
           <div className="space-y-3">
             <h3 className="font-semibold text-gray-900 text-sm">Adicionar Material</h3>
-            <div className="flex flex-col md:flex-row gap-2">
+            <div className="flex flex-col gap-2">
               <select
                 value={materialForm.materialId}
                 onChange={(e) => setMaterialForm({ ...materialForm, materialId: e.target.value })}
@@ -491,7 +472,7 @@ export default function PecasProntas() {
                 <option value="">Selecione um material</option>
                 {materiais.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.nome} (Disponível: {m.quantidade})
+                    {m.atelieId} - {m.nome} (Disponível: {m.quantidade})
                   </option>
                 ))}
               </select>

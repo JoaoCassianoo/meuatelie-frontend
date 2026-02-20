@@ -32,7 +32,8 @@ export default function Vendas() {
       setLoading(true);
       if (cache.vendas.length === 0) await carregarVendas();
       if (cache.pecasProntas.length === 0) await carregarPecasProntas();
-      const pecasNV = cache.pecasProntas.filter(p => !p.vendida);
+      let pecasNV = cache.pecasProntas.filter(p => !p.vendida);
+      pecasNV = pecasNV.filter(p => p.tipo != 1); // só mostrar peças de manutenção se tiver materiais:
       setVendas(cache.vendas);
       setPecasProntas(cache.pecasProntas);
       setPecasProntasNV(pecasNV);
