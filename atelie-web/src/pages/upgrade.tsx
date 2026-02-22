@@ -7,7 +7,7 @@ export default function UpgradePage() {
   const atelie = cache.atelie;
   const [loading, setLoading] = useState<string | null>(null);
 
-  const handleAssinar = async (periodicidade: 'mensal' | 'trimestral' | 'anual') => {
+  /*const handleAssinar = async (periodicidade: 'mensal' | 'trimestral' | 'anual') => {
     setLoading(periodicidade);
     try {
       const data = await iniciarAssinatura(periodicidade);
@@ -17,6 +17,12 @@ export default function UpgradePage() {
     } finally {
       setLoading(null);
     }
+  };*/
+  const handleSelecionarPlano = (periodicidade: string) => {
+    const mensagem = encodeURIComponent(
+      `Olá! Tenho interesse em assinar o Plano ${periodicidade.charAt(0).toUpperCase() + periodicidade.slice(1)} do Meu Ateliê. Poderia me ajudar?`
+    );
+    window.open(`https://wa.me/5519993814025?text=${mensagem}`, '_blank');
   };
 
   const textoBotao = (periodicidade: 'mensal' | 'trimestral' | 'anual') => {
@@ -66,7 +72,7 @@ export default function UpgradePage() {
             </div>
             <p className="text-gray-600 text-sm mb-8">Cancele quando quiser.</p>
             <button
-              onClick={() => handleAssinar('mensal')}
+              onClick={() => handleSelecionarPlano('mensal')}
               disabled={loading !== null}
               className="w-full text-center bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white py-3 rounded-xl font-semibold text-sm transition-all cursor-pointer disabled:opacity-60"
             >
@@ -97,7 +103,7 @@ export default function UpgradePage() {
             <p className="text-blue-200/70 text-sm mb-1">R$30/mês — <span className="text-white font-semibold">economize R$120</span></p>
             <p className="text-blue-200/50 text-xs mb-8">Equivale a 3 meses grátis</p>
             <button
-              onClick={() => handleAssinar('anual')}
+              onClick={() => handleSelecionarPlano('anual')}
               disabled={loading !== null}
               className="w-full text-center bg-white text-blue-700 hover:bg-blue-50 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer disabled:opacity-60"
             >
@@ -124,7 +130,7 @@ export default function UpgradePage() {
             </div>
             <p className="text-gray-600 text-sm mb-8">Cancele quando quiser.</p>
             <button
-              onClick={() => handleAssinar('trimestral')}
+              onClick={() => handleSelecionarPlano('trimestral')}
               disabled={loading !== null}
               className="w-full text-center bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white py-3 rounded-xl font-semibold text-sm transition-all cursor-pointer disabled:opacity-60"
             >
