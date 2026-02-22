@@ -10,6 +10,7 @@ import PecasProntas from './pages/pecasProntas'
 import Login from './pages/login'
 import Signup from './pages/signup'
 import Upgrade from './pages/upgrade'
+import RedefinirSenha from './pages/redefinir-senha'
 import LandingPage from './pages/landing'
 import { useAuth } from './context/AuthContext'
 import Perfil from './pages/perfil'
@@ -50,13 +51,15 @@ export default function App() {
     }
   };
 
-  // Verificar se está tentando ir para login ou signup (sem estar autenticado)
+  // Verificar se está tentando ir para login, signup ou redefinir-senha (sem estar autenticado)
   const hash = window.location.hash.replace('#', '');
   const showLogin = hash === 'login';
   const showSignup = hash === 'signup';
+  const showRedefinirSenha = hash.startsWith('redefinir-senha');
 
   if (loading) return <LoadingScreen />;
   if (!session) {
+    if (showRedefinirSenha) return <RedefinirSenha />;
     if (showSignup) return <Signup />;
     if (showLogin) return <Login />;
     return <LandingPage />;
