@@ -39,3 +39,8 @@ export async function iniciarAssinatura(periodicidade: 'mensal' | 'trimestral' |
   const response = await api.post('/assinatura/iniciar', { periodicidade });
   return response.data;
 }
+
+export async function esqueceuSenha(email: string) {
+  const response = await api.post('/Atelie/esqueceu-senha', { email });
+  return response.data;
+}

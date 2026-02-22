@@ -44,6 +44,26 @@ export default function Login() {
     window.location.reload();
   };
 
+  async function handleEsqueceuSenha() {
+  if (!email) {
+    setError("Digite seu e-mail antes de clicar em esqueci minha senha.");
+    return;
+  }
+  try {
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://meuatelie.vercel.app/#redefinir-senha'
+    });
+    if (error) throw error;
+    setError("");
+    alert("E-mail de redefinição enviado! Verifique sua caixa de entrada.");
+  } catch {
+    setError("Erro ao enviar e-mail. Tente novamente.");
+  } finally {
+    setLoading(false);
+  }
+}
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
       style={{ background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%)' }}>
@@ -105,7 +125,7 @@ export default function Login() {
             </div>
 
             <div className="text-right -mt-1">
-              <button className="text-xs text-blue-600 hover:underline font-medium">Esqueci minha senha</button>
+              <button onClick={handleEsqueceuSenha} className="text-xs text-blue-600 hover:underline font-medium">Esqueci minha senha</button>
             </div>
 
             {/* Login btn */}
