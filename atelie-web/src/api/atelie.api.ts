@@ -23,12 +23,14 @@ export async function assinaturaAtiva() {
     return response.data;
 }
 
-export async function registrarAtelie(email: string, senha: string, nome: string, atelieName: string) {
+export async function registrarAtelie(email: string, senha: string, nome: string, atelieNome: string, telefone: string, cpfCnpj: string) {
   const response = await api.post('/Atelie/registrar', {
     email,
     senha,
     nome,
-    atelieNome: atelieName
+    atelieNome,
+    telefone,
+    cpfCnpj
   });
   return response.data;
 }

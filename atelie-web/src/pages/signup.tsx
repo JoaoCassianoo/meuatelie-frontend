@@ -18,8 +18,10 @@ function ScissorsIcon() {
 
 export default function Signup() {
   const [name, setName] = useState("");
-  const [atelieName, setAtelieName] = useState("");
+  const [atelieNome, setAtelieNome] = useState("");
   const [email, setEmail] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [cpfCnpj, setCpfCnpj] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,7 +31,7 @@ export default function Signup() {
     setError("");
     
     // Validações
-    if (!name || !atelieName || !email || !password || !confirmPassword) {
+    if (!name || !atelieNome || !email || !telefone || !cpfCnpj || !password || !confirmPassword) {
       setError("Preencha todos os campos.");
       return;
     }
@@ -48,7 +50,7 @@ export default function Signup() {
       setLoading(true);
       
       // Chamar API do backend para registrar
-      await registrarAtelie(email, password, name, atelieName);
+      await registrarAtelie(email, password, name, atelieNome, telefone, cpfCnpj);
 
       // Se registrou com sucesso, fazer login automático
       const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
@@ -76,7 +78,7 @@ export default function Signup() {
     }
   }
 
-  const disabled = !name || !atelieName || !email || !password || !confirmPassword || loading;
+  const disabled = !name || !atelieNome || !email || !telefone || !cpfCnpj || !password || !confirmPassword || loading;
 
   const goToLogin = () => {
     window.location.hash = 'login';
@@ -136,8 +138,8 @@ export default function Signup() {
             {/* Atelie Name */}
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Nome do Ateliê</label>
-              <input type="text" placeholder="Nome do seu ateliê" value={atelieName}
-                onChange={(e) => setAtelieName(e.target.value)}
+              <input type="text" placeholder="Nome do seu ateliê" value={atelieNome}
+                onChange={(e) => setAtelieNome(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSignup()}
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900
                   focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 outline-none transition-all"/>
@@ -148,6 +150,26 @@ export default function Signup() {
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Email</label>
               <input type="email" placeholder="seu@email.com" value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSignup()}
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900
+                  focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 outline-none transition-all"/>
+            </div>
+
+            {/* Telefone */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Telefone</label>
+              <input type="text" placeholder="(00) 00000-0000" value={telefone}
+                onChange={(e) => setTelefone(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSignup()}
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900
+                  focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 outline-none transition-all"/>
+            </div>
+
+            {/* Cpf */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">CPF</label>
+              <input type="text" placeholder="000.000.000-00" value={cpfCnpj}
+                onChange={(e) => setCpfCnpj(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSignup()}
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900
                   focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 outline-none transition-all"/>
