@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, BarChart3, Package, CheckSquare, ShoppingCart, Truck, Sparkles, HouseIcon, User, Zap } from 'lucide-react';
-import { cache } from '../api/cache.api';
+import { Menu, X, BarChart3, Package, CheckSquare, ShoppingCart, Truck, Sparkles, HouseIcon, User } from 'lucide-react';
 
 type Props = {
   activePage: string;
@@ -9,7 +8,6 @@ type Props = {
 
 export function Sidebar({ activePage, onNavigate }: Props) {
   const [isOpen, setIsOpen] = useState(false);
-  const isFreePlan = cache.atelie?.plano === 'free';
 
   const menuItems = [
     { id: 'inicial',      label: 'Visão Geral',   icon: HouseIcon },

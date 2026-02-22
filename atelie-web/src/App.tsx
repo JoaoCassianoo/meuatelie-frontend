@@ -54,19 +54,6 @@ export default function App() {
   const showLogin = hash === 'login';
   const showSignup = hash === 'signup';
 
-  let statusExpirado = false;
-  let dataExpiracao = '';
-  try {
-    const s = cache.atelie.status;
-    const p = cache.atelie.plano;
-    if(p === 'free') {
-      statusExpirado = false;
-    } else {
-      statusExpirado = !!s && s !== 'ativo' && s !== 'cancelado';
-    }
-    dataExpiracao = new Date(cache.atelie.dataVencimento).toLocaleDateString('pt-BR');
-  } catch {}
-
   if (loading) return <LoadingScreen />;
   if (!session) {
     if (showSignup) return <Signup />;
