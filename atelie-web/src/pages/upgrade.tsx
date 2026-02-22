@@ -1,11 +1,8 @@
-import { useState } from 'react';
 import { Scissors } from 'lucide-react';
 import { cache } from '../api/cache.api';
-import { iniciarAssinatura } from '../api/atelie.api';
 
 export default function UpgradePage() {
   const atelie = cache.atelie;
-  const [loading, setLoading] = useState<string | null>(null);
 
   /*const handleAssinar = async (periodicidade: 'mensal' | 'trimestral' | 'anual') => {
     setLoading(periodicidade);
@@ -23,11 +20,6 @@ export default function UpgradePage() {
       `Olá! Tenho interesse em assinar o Plano ${periodicidade.charAt(0).toUpperCase() + periodicidade.slice(1)} do Meu Ateliê. Poderia me ajudar?`
     );
     window.open(`https://wa.me/5519993814025?text=${mensagem}`, '_blank');
-  };
-
-  const textoBotao = (periodicidade: 'mensal' | 'trimestral' | 'anual') => {
-    if (loading === periodicidade) return 'Aguarde...';
-    return atelie.plano === 'free' ? 'Fazer Upgrade →' : 'Renovar Plano →';
   };
 
   return (
@@ -73,10 +65,9 @@ export default function UpgradePage() {
             <p className="text-gray-600 text-sm mb-8">Cancele quando quiser.</p>
             <button
               onClick={() => handleSelecionarPlano('mensal')}
-              disabled={loading !== null}
-              className="w-full text-center bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white py-3 rounded-xl font-semibold text-sm transition-all cursor-pointer disabled:opacity-60"
+              className="w-full text-center bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white py-3 rounded-xl font-semibold text-sm transition-all cursor-pointer"
             >
-              {textoBotao('mensal')}
+              Fazer Upgrade →
             </button>
             <ul className="mt-8 space-y-3">
               <li className="flex items-center gap-2.5 text-sm text-gray-700">
@@ -104,10 +95,9 @@ export default function UpgradePage() {
             <p className="text-blue-200/50 text-xs mb-8">Equivale a 3 meses grátis</p>
             <button
               onClick={() => handleSelecionarPlano('anual')}
-              disabled={loading !== null}
-              className="w-full text-center bg-white text-blue-700 hover:bg-blue-50 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer disabled:opacity-60"
+              className="w-full text-center bg-white text-blue-700 hover:bg-blue-50 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer"
             >
-              {textoBotao('anual')}
+              Fazer Upgrade →
             </button>
             <ul className="mt-8 space-y-3">
               <li className="flex items-center gap-2.5 text-sm text-white">
@@ -131,10 +121,9 @@ export default function UpgradePage() {
             <p className="text-gray-600 text-sm mb-8">Cancele quando quiser.</p>
             <button
               onClick={() => handleSelecionarPlano('trimestral')}
-              disabled={loading !== null}
-              className="w-full text-center bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white py-3 rounded-xl font-semibold text-sm transition-all cursor-pointer disabled:opacity-60"
+              className="w-full text-center bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white py-3 rounded-xl font-semibold text-sm transition-all cursor-pointer"
             >
-              {textoBotao('trimestral')}
+              Fazer Upgrade →
             </button>
             <ul className="mt-8 space-y-3">
               <li className="flex items-center gap-2.5 text-sm text-gray-700">
