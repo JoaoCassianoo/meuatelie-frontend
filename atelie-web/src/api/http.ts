@@ -5,6 +5,8 @@ export const api = axios.create({
   baseURL: 'https://meuatelie-api.onrender.com/api',
 });
 
+//http://localhost:5277/
+
 api.interceptors.request.use(async (config) => {
   const { data } = await supabase.auth.getSession()
   const token = data.session?.access_token

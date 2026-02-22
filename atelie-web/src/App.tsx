@@ -8,13 +8,15 @@ import Vendas from './pages/vendas'
 import Encomendas from './pages/encomendas'
 import PecasProntas from './pages/pecasProntas'
 import Login from './pages/login'
+import Signup from './pages/signup'
+import Upgrade from './pages/upgrade'
 import LandingPage from './pages/landing'
 import { useAuth } from './context/AuthContext'
 import Perfil from './pages/perfil'
 import { cache } from './api/cache.api'
 import { LoadingScreen } from './components/LoadingScreen'
 
-const VALID_PAGES = ['inicial','financeiro','estoque','pecasProntas','todo','vendas','encomendas','perfil','venda-rapida'];
+const VALID_PAGES = ['inicial','financeiro','estoque','pecasProntas','todo','vendas','encomendas','perfil','venda-rapida','upgrade'];
 
 function getPageFromHash(): string {
   const hash = window.location.hash.replace('#', '');
@@ -47,23 +49,34 @@ export default function App() {
     }
   };
 
-  // Verificar se está tentando ir para login (sem estar autenticado)
+  // Verificar se está tentando ir para login ou signup (sem estar autenticado)
   const hash = window.location.hash.replace('#', '');
   const showLogin = hash === 'login';
+  const showSignup = hash === 'signup';
 
   let statusExpirado = false;
   let dataExpiracao = '';
   try {
     const s = cache.atelie.status;
-    statusExpirado = !!s && s !== 'ativo' && s !== 'cancelado';
+    const p = cache.atelie.plano;
+    if(p === 'free') {
+      statusExpirado = false;
+    } else {
+      statusExpirado = !!s && s !== 'ativo' && s !== 'cancelado';
+    }
     dataExpiracao = new Date(cache.atelie.dataVencimento).toLocaleDateString('pt-BR');
   } catch {}
 
   if (loading) return <LoadingScreen />;
   if (!session) {
+    if (showSignup) return <Signup />;
     if (showLogin) return <Login />;
     return <LandingPage />;
   }
+
+  // Verificar se usuário está no plano free e tentando acessar landing
+const isFreePlan = cache.atelie?.plano === 'free';
+if (isFreePlan) return <Upgrade />;
 
   const renderPage = () => {
     switch (currentPage) {
@@ -75,6 +88,7 @@ export default function App() {
       case 'encomendas':   return <Encomendas />;
       case 'pecasProntas': return <PecasProntas />;
       case 'perfil':       return <Perfil email={session.user.email} />;
+      case 'upgrade':      return <Upgrade />;
       default:             return <Inicial setActivePage={navigateTo} />;
     }
   };
@@ -85,16 +99,6 @@ export default function App() {
       <main className="flex-1 min-h-screen overflow-x-hidden pb-4">
         {renderPage()}
       </main>
-      {statusExpirado && (
-        <div className="fixed bottom-0 left-0 right-0 z-50">
-          <div className="bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-3 flex flex-col sm:flex-row items-center justify-center gap-3 text-sm font-medium shadow-2xl">
-            <span>⚠️ Seu plano expirou em {dataExpiracao}.</span>
-            <a href="/planos" className="bg-white text-red-600 font-bold px-4 py-1.5 rounded-lg hover:bg-red-50 transition-colors text-xs">
-              Renovar assinatura →
-            </a>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

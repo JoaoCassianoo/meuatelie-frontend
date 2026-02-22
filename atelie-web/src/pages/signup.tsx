@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { supabase } from "../api/supabase"
+import { registrarAtelie } from "../api/atelie.api"
 import { carregarAtelie } from "../api/cache.api"
 
 function ScissorsIcon() {
@@ -15,32 +16,70 @@ function ScissorsIcon() {
   );
 }
 
-export default function Login() {
-  const [email, setEmail]       = useState("");
+export default function Signup() {
+  const [name, setName] = useState("");
+  const [atelieName, setAtelieName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  async function handleLogin() {
+  async function handleSignup() {
     setError("");
-    if (!email || !password) { setError("Preencha email e senha."); return; }
+    
+    // Validações
+    if (!name || !atelieName || !email || !password || !confirmPassword) {
+      setError("Preencha todos os campos.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("As senhas não coincidem.");
+      return;
+    }
+
     try {
       setLoading(true);
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) { setError("Email ou senha incorretos."); return; }
-      if (!data.session) { setError("Não foi possível iniciar sessão."); return; }
+      
+      // Chamar API do backend para registrar
+      await registrarAtelie(email, password, name, atelieName);
+
+      // Se registrou com sucesso, fazer login automático
+      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (loginError || !loginData.session) {
+        setError("Conta criada! Faça login com suas credenciais.");
+        setTimeout(() => {
+          window.location.hash = 'login';
+          window.location.reload();
+        }, 2000);
+        return;
+      }
+
+      window.location.reload();
       await carregarAtelie();
-    } catch {
-      setError("Erro inesperado. Tente novamente.");
+      
+    } catch (err: any) {
+      setError(err.response?.data?.erro || "Erro ao criar conta. Tente novamente.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
   }
 
-  const disabled = !email || !password || loading;
+  const disabled = !name || !atelieName || !email || !password || !confirmPassword || loading;
 
-  const goToSignup = () => {
-    window.location.hash = 'signup';
+  const goToLogin = () => {
+    window.location.hash = 'login';
     window.location.reload();
   };
 
@@ -63,7 +102,7 @@ export default function Login() {
             <ScissorsIcon />
           </div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight">Ateliê Manager</h1>
-          <p className="text-blue-100/70 text-sm mt-1.5">Gestão completa do seu ateliê</p>
+          <p className="text-blue-100/70 text-sm mt-1.5">Crie sua conta agora</p>
         </div>
 
         {/* Card */}
@@ -74,7 +113,7 @@ export default function Login() {
           <div className="h-1" style={{ background: 'linear-gradient(90deg, #1d4ed8, #60a5fa)' }}/>
 
           <div className="p-8 space-y-4">
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Entrar na conta</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Registre-se</h2>
 
             {/* Error */}
             {error && (
@@ -84,12 +123,32 @@ export default function Login() {
               </div>
             )}
 
+            {/* Name */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Nome completo</label>
+              <input type="text" placeholder="Seu nome" value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSignup()}
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900
+                  focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 outline-none transition-all"/>
+            </div>
+
+            {/* Atelie Name */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Nome do Ateliê</label>
+              <input type="text" placeholder="Nome do seu ateliê" value={atelieName}
+                onChange={(e) => setAtelieName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSignup()}
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900
+                  focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 outline-none transition-all"/>
+            </div>
+
             {/* Email */}
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Email</label>
               <input type="email" placeholder="seu@email.com" value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                onKeyDown={(e) => e.key === 'Enter' && handleSignup()}
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900
                   focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 outline-none transition-all"/>
             </div>
@@ -97,19 +156,25 @@ export default function Login() {
             {/* Password */}
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Senha</label>
-              <input type="password" placeholder="••••••••" value={password}
+              <input type="password" placeholder="Mín. 6 caracteres" value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                onKeyDown={(e) => e.key === 'Enter' && handleSignup()}
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900
                   focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 outline-none transition-all"/>
             </div>
 
-            <div className="text-right -mt-1">
-              <button className="text-xs text-blue-600 hover:underline font-medium">Esqueci minha senha</button>
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Confirmar senha</label>
+              <input type="password" placeholder="Confirme sua senha" value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSignup()}
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900
+                  focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 outline-none transition-all"/>
             </div>
 
-            {/* Login btn */}
-            <button onClick={handleLogin} disabled={disabled}
+            {/* Signup btn */}
+            <button onClick={handleSignup} disabled={disabled}
               className={`w-full rounded-xl py-3 font-bold text-sm transition-all mt-1
                 ${disabled ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'text-white active:scale-[0.98]'}`}
               style={disabled ? {} : {
@@ -119,19 +184,18 @@ export default function Login() {
               {loading
                 ? <span className="flex items-center justify-center gap-2">
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
-                    Entrando...
+                    Criando conta...
                   </span>
-                : 'Entrar'}
+                : 'Criar conta'}
             </button>
-
 
           </div>
         </div>
 
         <p className="text-center text-blue-100/70 text-xs mt-6">
-          Ainda não tem conta? <button onClick={goToSignup} className="text-blue-100 hover:text-white font-semibold underline">Registre-se aqui</button>
+          Já tem uma conta? <button onClick={goToLogin} className="text-blue-100 hover:text-white font-semibold underline">Faça login</button>
         </p>
-
+        
         <p className="text-center text-blue-100/30 text-xs mt-3">© 2026 Ateliê Manager</p>
       </div>
     </div>

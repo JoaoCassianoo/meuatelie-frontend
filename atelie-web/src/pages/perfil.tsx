@@ -5,7 +5,7 @@ import { supabase } from "../api/supabase";
 import { cache, carregarAtelie, limparCache } from "../api/cache.api";
 import { atualizarDadosAtelie, type Atelie } from "../api/atelie.api";
 
-const REATIVACAO_URL = "https://seusite.com.br/planos";
+const REATIVACAO_URL = "/#upgrade";
 
 export default function Perfil({ email }: { email: any }) {
   const [user, setUser]             = useState<Atelie | null>(null);
@@ -178,35 +178,41 @@ export default function Perfil({ email }: { email: any }) {
 
       {/* Botões de plano */}
       <div className="space-y-3">
-        {user?.status === 'ativo' && (
-          <a href={REATIVACAO_URL} target="_blank" rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl
-              bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold text-sm
-              hover:from-blue-700 hover:to-blue-600 transition-all shadow-md shadow-blue-500/20">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
-            </svg>
-            Gerenciar assinatura
-          </a>
-        )}
-
         {user?.status !== 'ativo' && (
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-            <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-2">Plano expirado</p>
-            <p className="text-sm text-amber-800 mb-4">Sua assinatura venceu em {fmt(user?.dataVencimento)}. Renove para continuar com seus dados intactos.</p>
-            <a href={REATIVACAO_URL} target="_blank" rel="noopener noreferrer"
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl
-                bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold text-sm
-                hover:from-amber-600 hover:to-amber-700 transition-all shadow-md shadow-amber-500/20">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="23 4 23 10 17 10"/>
-                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-              </svg>
-              Renovar assinatura →
-            </a>
-          </div>
+          <>
+            {user?.plano === 'free' ? (
+              <div className="bg-violet-50 border border-violet-200 rounded-2xl p-5">
+                <p className="text-xs font-semibold text-violet-600 uppercase tracking-wide mb-2">Plano gratuito</p>
+                <p className="text-sm text-violet-800 mb-4">Você está no plano gratuito. Assine o <strong>Pro</strong> e tenha acesso a todas as funcionalidades.</p>
+                <a href={REATIVACAO_URL} rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl
+                    bg-gradient-to-r from-violet-500 to-violet-600 text-white font-semibold text-sm
+                    hover:from-violet-600 hover:to-violet-700 transition-all shadow-md shadow-violet-500/20">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                  Assinar o Pro →
+                </a>
+              </div>
+            ) : (
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+                <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-2">Plano expirado</p>
+                <p className="text-sm text-amber-800 mb-4">Sua assinatura venceu em {fmt(user?.dataVencimento)}. Renove para continuar com seus dados intactos.</p>
+                <a href={REATIVACAO_URL} rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl
+                    bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold text-sm
+                    hover:from-amber-600 hover:to-amber-700 transition-all shadow-md shadow-amber-500/20">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                  </svg>
+                  Renovar assinatura →
+                </a>
+              </div>
+            )}
+          </>
         )}
 
         {/* Logout */}

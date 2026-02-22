@@ -6,6 +6,11 @@ export default function LandingPage() {
     window.location.reload(); // Forçar recarregamento para resetar estado
   };
 
+  const goToSignup = () => {
+    window.location.hash = 'signup';
+    window.location.reload(); // Forçar recarregamento para resetar estado
+  };
+
   const features = [
     { icon: BarChart3,   title: 'Controle Financeiro',   desc: 'Entradas, saídas e saldo em tempo real. Separe finanças pessoais da loja.' },
     { icon: Package,     title: 'Gestão de Estoque',      desc: 'Nunca mais fique sem material. Controle quantidades e receba alertas.' },
@@ -31,9 +36,14 @@ export default function LandingPage() {
             <a href="#features" className="hover:text-white transition-colors">Funcionalidades</a>
             <a href="#precos" className="hover:text-white transition-colors">Preços</a>
           </div>
-          <button onClick={goToLogin} className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white text-sm font-semibold px-4 py-2 rounded-xl shadow-lg shadow-blue-600/30 transition-all active:scale-95">
-            Entrar
-          </button>
+          <div className='flex gap-2'>
+            <button onClick={goToSignup} className="bg-white text-blue-700 text-sm font-semibold px-4 py-2 rounded-xl shadow-lg shadow-blue-600/30 transition-all active:scale-95">
+              Registrar
+            </button>
+            <button onClick={goToLogin} className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white text-sm font-semibold px-4 py-2 rounded-xl shadow-lg shadow-blue-600/30 transition-all active:scale-95">
+              Entrar
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -61,9 +71,9 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="#precos" className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-bold px-8 py-4 rounded-2xl shadow-2xl shadow-blue-600/40 transition-all active:scale-95 text-base w-full sm:w-auto text-center">
+            <button onClick={goToSignup} className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-bold px-8 py-4 rounded-2xl shadow-2xl shadow-blue-600/40 transition-all active:scale-95 text-base w-full sm:w-auto text-center cursor-pointer">
               Começar por R$40/mês →
-            </a>
+            </button>
           </div>
 
           <div className="mt-16 grid grid-cols-3 gap-4 max-w-sm mx-auto">
@@ -108,7 +118,7 @@ export default function LandingPage() {
               <p className="text-blue-300 text-xs font-semibold uppercase tracking-wide mb-4">Mensal</p>
               <div className="mb-5"><span className="text-5xl font-extrabold">R$40</span><span className="text-gray-400 text-sm">/mês</span></div>
               <p className="text-gray-500 text-sm mb-7">Cancele quando quiser.</p>
-              <a href="#" className="block text-center border border-blue-500/30 hover:bg-blue-500/10 py-3 rounded-xl font-semibold text-sm transition-all">Assinar</a>
+              <button onClick={goToSignup} className="w-full text-center border border-blue-500/30 hover:bg-blue-500/10 py-3 rounded-xl font-semibold text-sm transition-all cursor-pointer">Assinar</button>
             </div>
 
             <div className="rounded-2xl p-8 relative" style={{ background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', boxShadow: '0 24px 64px rgba(37,99,235,0.45)' }}>
@@ -117,14 +127,14 @@ export default function LandingPage() {
               <div className="mb-1"><span className="text-5xl font-extrabold">R$360</span><span className="text-blue-200 text-sm">/ano</span></div>
               <p className="text-blue-200/70 text-sm mb-1">R$30/mês — <span className="text-white font-semibold">economize R$120</span></p>
               <p className="text-blue-200/50 text-xs mb-7">Equivale a 3 meses grátis</p>
-              <a href="#" className="block text-center bg-white text-blue-700 hover:bg-blue-50 py-3 rounded-xl font-bold text-sm transition-all shadow-lg">Garantir desconto →</a>
+              <button onClick={goToSignup} className="w-full text-center bg-white text-blue-700 hover:bg-blue-50 py-3 rounded-xl font-bold text-sm transition-all shadow-lg cursor-pointer">Garantir desconto →</button>
             </div>
 
             <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-7 hover:-translate-y-1 transition-all">
               <p className="text-blue-300 text-xs font-semibold uppercase tracking-wide mb-4">Trimestral</p>
               <div className="mb-5"><span className="text-5xl font-extrabold">R$108</span><span className="text-gray-400 text-sm">/trimestre</span></div>
               <p className="text-gray-500 text-sm mb-7">R$36/mês.</p>
-              <a href="#" className="block text-center border border-blue-500/30 hover:bg-blue-500/10 py-3 rounded-xl font-semibold text-sm transition-all">Assinar</a>
+              <button onClick={goToSignup} className="w-full text-center border border-blue-500/30 hover:bg-blue-500/10 py-3 rounded-xl font-semibold text-sm transition-all cursor-pointer">Assinar</button>
             </div>
           </div>
 
@@ -138,7 +148,7 @@ export default function LandingPage() {
           <h2 className="text-4xl md:text-5xl font-bold mb-4">Pronta para transformar<br/>seu ateliê?</h2>
           <p className="text-blue-100/60 mb-10 text-lg">Comece agora e organize seu negócio de verdade.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="#precos" className="inline-block bg-white text-blue-700 font-bold px-10 py-4 rounded-2xl shadow-2xl hover:bg-blue-50 transition-all active:scale-95 text-base">Começar agora →</a>
+            <button onClick={goToSignup} className="inline-block bg-white text-blue-700 font-bold px-10 py-4 rounded-2xl shadow-2xl hover:bg-blue-50 transition-all active:scale-95 text-base cursor-pointer">Começar agora →</button>
           </div>
         </div>
       </section>

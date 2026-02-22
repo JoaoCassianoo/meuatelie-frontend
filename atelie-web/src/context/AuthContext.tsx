@@ -6,6 +6,7 @@ type AuthContextType = {
   session: Session | null
   loading: boolean
   signOut: () => Promise<void>
+  signUp: (email: string, password: string, fullName: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({} as any)
@@ -31,8 +32,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut()
   }
 
+  const signUp = async (email: string, password: string, fullName: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+        }
+      }
+    })
+
+    if (error) throw error
+    if (!data.user) throw new Error("Erro ao criar conta")
+  }
+
   return (
-    <AuthContext.Provider value={{ session, loading, signOut }}>
+    <AuthContext.Provider value={{ session, loading, signOut, signUp }}>
       {children}
     </AuthContext.Provider>
   )

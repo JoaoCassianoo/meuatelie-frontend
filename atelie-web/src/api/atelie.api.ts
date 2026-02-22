@@ -22,3 +22,18 @@ export async function assinaturaAtiva() {
     const response = await api.get('/Atelie/assinatura-ativa');
     return response.data;
 }
+
+export async function registrarAtelie(email: string, senha: string, nome: string, atelieName: string) {
+  const response = await api.post('/Atelie/registrar', {
+    email,
+    senha,
+    nome,
+    atelieNome: atelieName
+  });
+  return response.data;
+}
+
+export async function iniciarAssinatura(periodicidade: 'mensal' | 'trimestral' | 'anual') {
+  const response = await api.post('/assinatura/iniciar', { periodicidade });
+  return response.data;
+}
