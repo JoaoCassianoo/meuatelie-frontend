@@ -66,7 +66,7 @@ Crie um arquivo `.env` na raiz do projeto:
 ```env
 VITE_SUPABASE_URL=https://xxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=sua_anon_key
-VITE_API_URL=https://meuatelie-api.onrender.com
+VITE_API_URL=https://urldasuaapi.com
 ```
 
 ### Rodando localmente
