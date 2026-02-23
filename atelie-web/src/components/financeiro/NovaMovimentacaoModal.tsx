@@ -38,8 +38,12 @@ export function NovaMovimentacaoModal({
     if (movimentacao) {
       setDescricao(movimentacao.descricao);
       setValor(movimentacao.valor);
-      // ensure date input gets YYYY-MM-DD
-      setData(movimentacao.data.split('T')[0]);
+      // Converte UTC para data local mantendo a data correta
+      const dateObj = new Date(movimentacao.data);
+      const year = dateObj.getUTCFullYear();
+      const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getUTCDate()).padStart(2, '0');
+      setData(`${year}-${month}-${day}`);
       setContexto(movimentacao.contexto);
       setMeioPagamento(movimentacao.meioPagamento);
     } else if (isOpen) {
@@ -58,12 +62,17 @@ export function NovaMovimentacaoModal({
   async function salvar() {
     setSalvando(true);
     try {
+      // Converte data local para UTC ISO string
+      const [year, month, day] = data.split('-');
+      const dateUTC = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
+      const dataISO = dateUTC.toISOString();
+      
       if (movimentacao && movimentacao.id) {
         await atualizarMovimentacao(movimentacao.id, {
           id: movimentacao.id,
           descricao,
           valor,
-          data,
+          data: dataISO,
           contexto,
           meioPagamento,
         });
@@ -71,7 +80,7 @@ export function NovaMovimentacaoModal({
         await criarMovimentacao({
           descricao,
           valor,
-          data,
+          data: dataISO,
           contexto,
           meioPagamento,
         });

@@ -15,6 +15,11 @@ export async function registrarVenda(venda: Omit<Venda, 'id'>) {
   return response.data;
 }
 
+export async function atualizarVenda(id: number, venda: Omit<Venda, 'id'>) {
+  const response = await api.put(`/Vendas/${id}`, venda);
+  return response.data;
+}
+
 export async function obterVendas() {
   const response = await api.get('/Vendas');
   return response.data;

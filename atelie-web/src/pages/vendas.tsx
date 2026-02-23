@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
-import { deletarVenda, registrarVenda } from '../api/vendas.api';
+import { deletarVenda, registrarVenda, atualizarVenda } from '../api/vendas.api';
 import type { Venda } from '../api/vendas.api';
 import { Plus, TrendingUp, Trash2, Edit2, X, Save, Eye, EyeOff } from 'lucide-react';
 import { type PecaPronta } from '../api/pecasProntas.api';
@@ -60,15 +60,22 @@ export default function Vendas() {
     }
     setSalvando(true);
     try {
-      await registrarVenda({ cliente: formData.cliente, pecaProntaId: Number(formData.pecaProntaId), valorVenda: Number(formData.valorVenda), observacao: formData.observacao });
+      const vendaData = { cliente: formData.cliente, pecaProntaId: Number(formData.pecaProntaId), valorVenda: Number(formData.valorVenda), observacao: formData.observacao };
+      
+      if (vendaEditando) {
+        await atualizarVenda(vendaEditando.id!, vendaData);
+      } else {
+        await registrarVenda(vendaData);
+      }
+      
       await carregarVendas(); await carregarPecasProntas();
       setVendas(cache.vendas); setPecasProntas(cache.pecasProntas);
       setTotalVendas(cache.vendas.reduce((s, v) => s + v.valorVenda, 0));
       setModalOpen(false);
       setFormData({ cliente: '', pecaProntaId: '', valorVenda: '', observacao: '' });
-      addToast('Venda registrada com sucesso!', 'success');
+      addToast(vendaEditando ? 'Venda atualizada com sucesso!' : 'Venda registrada com sucesso!', 'success');
     } catch (error: any) {
-      addToast(error?.response?.data?.erro || 'Erro ao registrar venda', 'error');
+      addToast(error?.response?.data?.erro || 'Erro ao salvar venda', 'error');
     } finally {
       setSalvando(false);
     }

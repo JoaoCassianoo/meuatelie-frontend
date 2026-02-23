@@ -2,10 +2,10 @@ import axios from 'axios';
 import { supabase } from './supabase';
 
 export const api = axios.create({
-  baseURL: 'https://meuatelie-api.onrender.com/api',
+  baseURL: 'http://localhost:5277/api',
 });
 
-//http://localhost:5277/
+//https://meuatelie-api.onrender.com/
 
 api.interceptors.request.use(async (config) => {
   const { data } = await supabase.auth.getSession()

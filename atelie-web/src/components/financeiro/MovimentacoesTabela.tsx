@@ -21,6 +21,14 @@ export function MovimentacoesTabela({
    function escondeReceita(valor: string) {
     return esconderReceita ? esconderReceita(valor) : valor;
   }
+  
+  function formatarDataUTC(dataStr: string) {
+    const dateObj = new Date(dataStr);
+    const year = dateObj.getUTCFullYear();
+    const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getUTCDate()).padStart(2, '0');
+    return `${day}/${month}/${year}`;
+  }
   return (
     <><div className="hidden md:block">
       <div className="overflow-x-auto">
@@ -50,7 +58,7 @@ export function MovimentacoesTabela({
                   className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-4 py-3 text-sm text-gray-700">
-                    {new Date(m.data).toLocaleDateString('pt-BR')}
+                    {formatarDataUTC(m.data)}
                   </td>
 
                   <td className="max-w-[250px] px-4 py-3 text-sm font-medium text-gray-900">
@@ -127,7 +135,7 @@ export function MovimentacoesTabela({
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-sm text-gray-500">
-                  {new Date(m.data).toLocaleDateString('pt-BR')}
+                  {formatarDataUTC(m.data)}
                 </p>
                 <p className="font-semibold text-gray-900 max-w-[165px]">
                   {m.descricao}
