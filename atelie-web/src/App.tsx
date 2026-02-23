@@ -74,7 +74,6 @@ if (isFreePlan) return <Upgrade />;
   let daysUntilExpiration = 0;
   try {
     const dataVencimento = cache.atelie?.dataVencimento;
-    console.log('Data de vencimento do plano:', dataVencimento);
     if (dataVencimento) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);

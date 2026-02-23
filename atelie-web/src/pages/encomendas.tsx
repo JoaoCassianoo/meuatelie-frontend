@@ -143,7 +143,7 @@ export default function Encomendas() {
                 <div><label className={labelCls}>Material</label>
                   <select value={form.materialId} onChange={(e) => setForm({...form, materialId: e.target.value})} className={inputCls}>
                     <option value="">Selecione um material</option>
-                    {materiais.map(m => <option key={m.id} value={m.id}>{m.nome} (Disponível: {m.quantidade})</option>)}
+                    {materiais.map(m => <option key={m.id} value={m.id}>{m.atelieId} - {m.nome} (Disponível: {m.quantidade})</option>)}
                   </select>
                 </div>
                 <div><label className={labelCls}>Valor Orçado (R$) *</label>

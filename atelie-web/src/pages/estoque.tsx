@@ -193,7 +193,7 @@ export default function Estoque() {
       {/* Modal Material */}
       <Modal isOpen={materialModalOpen} onClose={() => { setMaterialModalOpen(false); setMaterialEditando(null); }}>
         <div className="flex justify-between items-center mb-5">
-          <h2 className="text-xl font-bold text-gray-900">{materialEditando ? 'Editar Material' : 'Novo Material'}</h2>
+          <h2 className="text-xl font-bold text-gray-900">{materiais.length + 1} - {materialEditando ? 'Editar Material' : 'Novo Material'}</h2>
           <button onClick={() => { setMaterialModalOpen(false); setMaterialEditando(null); }} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"><X size={20} className="text-gray-500" /></button>
         </div>
         <div className="space-y-4">
@@ -241,7 +241,7 @@ export default function Estoque() {
           <div><label className={lbl}>Material *</label>
             <select value={formMovimentacao.materialId} onChange={e => setFormMovimentacao({ ...formMovimentacao, materialId: e.target.value })} className={inp}>
               <option value="">Selecione</option>
-              {materiais.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
+              {materiais.map(m => <option key={m.id} value={m.id}>{m.atelieId} - {m.nome}</option>)}
             </select>
           </div>
           <div><label className={lbl}>Quantidade *</label><input type="number" value={formMovimentacao.quantidade} onChange={e => setFormMovimentacao({ ...formMovimentacao, quantidade: e.target.value })} placeholder="0" className={inp} /></div>
@@ -282,7 +282,7 @@ export default function Estoque() {
                     <div key={mat.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-4">
                       <div className="flex justify-between items-start mb-3">
                         <div>
-                          <h3 className="font-semibold text-gray-900 text-sm">{mat.nome}</h3>
+                          <h3 className="font-semibold text-gray-900 text-sm">{mat.atelieId} - {mat.nome}</h3>
                           {mat.tamanho && <p className="text-xs text-gray-400 mt-0.5">{mat.tamanho}</p>}
                         </div>
                         <div className="flex gap-1">
@@ -317,7 +317,7 @@ export default function Estoque() {
                 <label className={lbl}>Filtrar por Material</label>
                 <select value={movFilter || ''} onChange={e => setMovFilter(e.target.value ? Number(e.target.value) : undefined)} className={inp}>
                   <option value="">Todos</option>
-                  {materiais.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
+                  {materiais.map(m => <option key={m.id} value={m.id}>{m.atelieId} - {m.nome}</option>)}
                 </select>
               </div>
 
